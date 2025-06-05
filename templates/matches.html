@@ -39,7 +39,7 @@
               <td>{{ score }}%</td>
               <td>
                 <form method="post" action="{{ url_for('main.confirm_match') }}">
-                  {{ csrf_token() }}
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                   <input type="hidden" name="lost_id" value="{{ lost.id }}">
                   <input type="hidden" name="found_id" value="{{ found.id }}">
                   <button type="submit" class="btn btn-sm btn-success">Valider</button>
