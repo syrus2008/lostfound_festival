@@ -1,7 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, FileField, SubmitField
 from wtforms.validators import DataRequired, Length, Email
-from flask_wtf.file import FileAllowed, MultipleFileField
+from flask_wtf.file import FileAllowed
+from wtforms import MultipleFileField
 
 class ItemForm(FlaskForm):
     title = StringField('Titre', validators=[DataRequired(), Length(max=100)])
