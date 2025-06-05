@@ -169,15 +169,13 @@ def detail_item(item_id):
             # Mettre les deux objets en RETURNED
             now = datetime.utcnow()
             item.status = Status.RETURNED
-            other.status = Status.RETURNED
-
-            # Copier les coordonnées réporter de l'un vers claimant de l'autre
             item.claimant_name = other.reporter_name
             item.claimant_email = other.reporter_email
             item.claimant_phone = other.reporter_phone
             item.return_date = now
             item.return_comment = f"Correspondance validée avec l'objet #{other.id}"
 
+            other.status = Status.RETURNED
             other.claimant_name = item.reporter_name
             other.claimant_email = item.reporter_email
             other.claimant_phone = item.reporter_phone
@@ -281,3 +279,74 @@ def api_check_similar():
         return {'similars': []}
     similars = find_similar_items(titre, cat_id, seuil=70)
     return {'similars': similars}
+
+# ───────────────────────────────────────────────────────────────────────────────
+# Routes de correspondance globale Lost↔Found (nouvelles)
+# ───────────────────────────────────────────────────────────────────────────────
+def get_all_candidate_pairs(seuil=60):
+    from collections import defaultdict
+    pairs = []
+    lost_items = Item.query.filter_by(status=Status.LOST).all()
+    found_items = Item.query.filter_by(status=Status.FOUND).all()
+
+    found_by_cat = defaultdict(list)
+    for f in found_items:
+        found_by_cat[f.category_id].append(f)
+
+    for lost in lost_items:
+        candidats = found_by_cat.get(lost.category_id, [])
+        for found in candidats:
+            score = fuzz.token_sort_ratio(lost.title, found.title)
+            if score >= seuil:
+                pairs.append((lost, found, score))
+    return pairs
+
+@bp.route('/matches')
+def list_matches():
+    try:
+        seuil = int(request.args.get('threshold', 60))
+    except ValueError:
+        seuil = 60
+
+    pairs = get_all_candidate_pairs(seuil=seuil)
+    pairs = sorted(pairs, key=lambda x: x[2], reverse=True)
+
+    return render_template('matches.html', pairs=pairs, threshold=seuil)
+
+@bp.route('/matches/confirm', methods=['POST'])
+def confirm_match():
+    try:
+        lost_id = int(request.form.get('lost_id'))
+        found_id = int(request.form.get('found_id'))
+    except (TypeError, ValueError):
+        flash("Identifiants invalides pour la correspondance.", "danger")
+        return redirect(url_for('main.list_matches'))
+
+    lost = Item.query.get(lost_id)
+    found = Item.query.get(found_id)
+    if not lost or not found:
+        flash("Objet introuvable pour correspondance.", "danger")
+        return redirect(url_for('main.list_matches'))
+
+    if lost.status != Status.LOST or found.status != Status.FOUND:
+        flash("L’objet n’est plus disponible pour correspondance.", "warning")
+        return redirect(url_for('main.list_matches'))
+
+    now = datetime.utcnow()
+    lost.status = Status.RETURNED
+    lost.claimant_name = found.reporter_name
+    lost.claimant_email = found.reporter_email
+    lost.claimant_phone = found.reporter_phone
+    lost.return_date = now
+    lost.return_comment = f"Corrélé avec Found #{found.id}"
+
+    found.status = Status.RETURNED
+    found.claimant_name = lost.reporter_name
+    found.claimant_email = lost.reporter_email
+    found.claimant_phone = lost.reporter_phone
+    found.return_date = now
+    found.return_comment = f"Corrélé avec Lost #{lost.id}"
+
+    db.session.commit()
+    flash(f"Correspondance validée : Lost #{lost.id} ↔ Found #{found.id}", "success")
+    return redirect(url_for('main.list_matches'))
