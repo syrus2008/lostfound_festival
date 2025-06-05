@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2 class="mb-4">Modifier l'objet : {{ item.title }}</h2>
+  <form method="post" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">
+      {{ form.title.label(class="form-label") }}
+      {{ form.title(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.comments.label(class="form-label") }}
+      {{ form.comments(class="form-control", rows="3") }}
+    </div>
+    <div class="mb-3">
+      {{ form.location.label(class="form-label") }}
+      {{ form.location(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.category.label(class="form-label") }}
+      {{ form.category(class="form-select") }}
+    </div>
+    <div class="mb-3">
+      {{ form.reporter_name.label(class="form-label") }}
+      {{ form.reporter_name(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.reporter_email.label(class="form-label") }}
+      {{ form.reporter_email(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.reporter_phone.label(class="form-label") }}
+      {{ form.reporter_phone(class="form-control") }}
+    </div>
+    <div class="mb-3">
+      {{ form.photo.label(class="form-label") }}
+      {{ form.photo(class="form-control") }}
+      {% if item.photo_filename %}
+        <small>Photo actuelle : {{ item.photo_filename }}</small><br>
+      {% endif %}
+      <div class="form-text">Formats autorisés : jpg, jpeg, png. Max 5 Mo.</div>
+    </div>
+    <button type="submit" class="btn btn-success">Enregistrer</button>
+  </form>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="row">
+    <div class="col-md-6">
+
+      {# Affiche la photo si elle existe, sinon placeholder #}
+      {% if item.photo_filename %}
+        <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}"
+             class="img-fluid mb-3" alt="Photo">
+      {% else %}
+        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+          <span class="text-muted">Pas de photo</span>
+        </div>
+      {% endif %}
+
+      {# Détails de l'objet #}
+      <h3>{{ item.title }}</h3>
+      <p><strong>Catégorie :</strong>
+        {% if item.category %}
+          {{ item.category.name }}
+        {% else %}
+          —
+        {% endif %}
+      </p>
+      <p><strong>Lieu :</strong> {{ item.location or '—' }}</p>
+      <p><strong>Date signalement :</strong> {{ item.date_reported.strftime('%d/%m/%Y %H:%M') }}</p>
+      <p><strong>Description :</strong><br> {{ item.comments or '—' }}</p>
+
+      <hr>
+      <h5>Informations déclarant</h5>
+      <p><strong>Nom :</strong> {{ item.reporter_name }}</p>
+      <p><strong>Email :</strong> {{ item.reporter_email }}</p>
+      <p><strong>Téléphone :</strong> {{ item.reporter_phone or '—' }}</p>
+
+      {# Si l'objet est déjà rendu #}
+      {% if item.status == Status.RETURNED %}
+        <hr>
+        <h5>Objet rendu</h5>
+        <p><strong>Date restitution :</strong>
+          {% if item.return_date %}
+            {{ item.return_date.strftime('%d/%m/%Y %H:%M') }}
+          {% else %}
+            —
+          {% endif %}
+        </p>
+        <p><strong>Réclamant :</strong> {{ item.claimant_name or '—' }}</p>
+        <p><strong>Email réclamant :</strong> {{ item.claimant_email or '—' }}</p>
+        <p><strong>Téléphone réclamant :</strong> {{ item.claimant_phone or '—' }}</p>
+        <p><strong>Commentaire restitution :</strong><br> {{ item.return_comment or '—' }}</p>
+
+      {# Sinon, deux formulaires : correspondance puis réclamation #}
+      {% else %}
+        <hr>
+
+        {# 1) Formulaire de correspondance si match_form non None #}
+        {% if match_form %}
+          <h5>Valider correspondance avec un objet existant</h5>
+          <form method="post">
+            {{ match_form.hidden_tag() }}
+            <div class="mb-3">
+              {{ match_form.match_with.label(class="form-label") }}
+              {{ match_form.match_with(class="form-select") }}
+            </div>
+            <button type="submit" name="submit_match" class="btn btn-warning">Confirmer correspondance</button>
+          </form>
+          <hr>
+        {% endif %}
+
+        {# 2) Formulaire de réclamation classique #}
+        <h5>Réclamer cet objet</h5>
+        <form method="post">
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            {{ form.claimant_name.label(class="form-label") }}
+            {{ form.claimant_name(class="form-control", placeholder="Votre nom") }}
+          </div>
+          <div class="mb-3">
+            {{ form.claimant_email.label(class="form-label") }}
+            {{ form.claimant_email(class="form-control", placeholder="Votre email") }}
+          </div>
+          <div class="mb-3">
+            {{ form.claimant_phone.label(class="form-label") }}
+            {{ form.claimant_phone(class="form-control", placeholder="Votre téléphone (facultatif)") }}
+          </div>
+          <button type="submit" name="submit" class="btn btn-success">{{ form.submit.label.text }}</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}

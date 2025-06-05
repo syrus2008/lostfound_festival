@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Export {{ status.capitalize() }}</title>
+  <style>
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+  </style>
+</head>
+<body>
+  <h1>Export – Objets {{ status.capitalize() }}</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Catégorie</th><th>Titre</th><th>Description</th>
+        <th>Lieu</th><th>Date signalement</th><th>Photo (fichier)</th>
+        <th>Nom déclarant</th><th>Email déclarant</th><th>Téléphone déclarant</th>
+        <th>Nom réclamant</th><th>Email réclamant</th><th>Téléphone réclamant</th>
+        <th>Date restitution</th><th>Commentaire restitution</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.category.name }}</td>
+          <td>{{ item.title }}</td>
+          <td>{{ item.comments or '' }}</td>
+          <td>{{ item.location or '' }}</td>
+          <td>{{ item.date_reported.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>{{ item.photo_filename or '' }}</td>
+          <td>{{ item.reporter_name }}</td>
+          <td>{{ item.reporter_email }}</td>
+          <td>{{ item.reporter_phone or '' }}</td>
+          <td>{{ item.claimant_name or '' }}</td>
+          <td>{{ item.claimant_email or '' }}</td>
+          <td>{{ item.claimant_phone or '' }}</td>
+          <td>{{ item.return_date.strftime('%d/%m/%Y %H:%M') if item.return_date else '' }}</td>
+          <td>{{ item.return_comment or '' }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

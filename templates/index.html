@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="text-center mt-5">
+    <h1>Bienvenue sur Lost & Found Festival</h1>
+    <p class="lead">Gérez facilement les objets perdus, trouvés et rendus.</p>
+    <a href="{{ url_for('main.create_lost') }}" class="btn btn-primary m-2">Signaler un objet perdu</a>
+    <a href="{{ url_for('main.create_found') }}" class="btn btn-secondary m-2">Signaler un objet trouvé</a>
+  </div>
+{% endblock %}
