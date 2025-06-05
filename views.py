@@ -34,31 +34,42 @@ def find_similar_items(titre, category_id, seuil=70):
 def index():
     return render_template('index.html')
 
-@bp.route('/lost/new', methods=['GET', 'POST'])
-def create_lost():
-    form = ItemForm()
-    form.category.choices = [(c.id, c.name) for c in Category.query.order_by(Category.name).all()]
+@bp.route('/lost/new')
+def redirect_lost():
+    return redirect(url_for('main.report_item'), code=301)
 
-    if form.validate_on_submit():
-        doublons = find_similar_items(form.title.data, form.category.data, 70)
+@bp.route('/found/new')
+def redirect_found():
+    return redirect(url_for('main.report_item'), code=301)
+
+@bp.route('/report', methods=['GET', 'POST'])
+def report_item():
+    lost_form = ItemForm(prefix='lost')
+    found_form = ItemForm(prefix='found')
+    categories = [(c.id, c.name) for c in Category.query.order_by(Category.name).all()]
+    lost_form.category.choices = categories
+    found_form.category.choices = categories
+
+    # Gestion soumission objet perdu
+    if lost_form.validate_on_submit() and 'submit_lost' in request.form:
+        doublons = find_similar_items(lost_form.title.data, lost_form.category.data, 70)
         if doublons:
-            flash("Attention : des objets similaires existent déjà !", "warning")
-
+            flash("Attention : des objets similaires existent déjà !", "lost")
         item = Item(
             status=Status.LOST,
-            title=form.title.data,
-            comments=form.comments.data,
-            location=form.location.data,
-            category_id=form.category.data,
-            reporter_name=form.reporter_name.data,
-            reporter_email=form.reporter_email.data,
-            reporter_phone=form.reporter_phone.data
+            title=lost_form.title.data,
+            comments=lost_form.comments.data,
+            location=lost_form.location.data,
+            category_id=lost_form.category.data,
+            reporter_name=lost_form.reporter_name.data,
+            reporter_email=lost_form.reporter_email.data,
+            reporter_phone=lost_form.reporter_phone.data
         )
         db.session.add(item)
-        db.session.flush()  # pour avoir l'id
-        if form.photos.data:
+        db.session.flush()
+        if lost_form.photos.data:
             from models import ItemPhoto
-            for f in form.photos.data:
+            for f in lost_form.photos.data:
                 if f and allowed_file(f.filename):
                     filename = secure_filename(f.filename)
                     chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
@@ -69,33 +80,26 @@ def create_lost():
         flash("Objet perdu enregistré !", "success")
         return redirect(url_for('main.list_items', status='lost'))
 
-    return render_template('lost_form.html', form=form, action='lost')
-
-@bp.route('/found/new', methods=['GET', 'POST'])
-def create_found():
-    form = ItemForm()
-    form.category.choices = [(c.id, c.name) for c in Category.query.order_by(Category.name).all()]
-
-    if form.validate_on_submit():
-        doublons = find_similar_items(form.title.data, form.category.data, 70)
+    # Gestion soumission objet trouvé
+    if found_form.validate_on_submit() and 'submit_found' in request.form:
+        doublons = find_similar_items(found_form.title.data, found_form.category.data, 70)
         if doublons:
-            flash("Attention : des objets similaires existent déjà !", "warning")
-
+            flash("Attention : des objets similaires existent déjà !", "found")
         item = Item(
             status=Status.FOUND,
-            title=form.title.data,
-            comments=form.comments.data,
-            location=form.location.data,
-            category_id=form.category.data,
-            reporter_name=form.reporter_name.data,
-            reporter_email=form.reporter_email.data,
-            reporter_phone=form.reporter_phone.data
+            title=found_form.title.data,
+            comments=found_form.comments.data,
+            location=found_form.location.data,
+            category_id=found_form.category.data,
+            reporter_name=found_form.reporter_name.data,
+            reporter_email=found_form.reporter_email.data,
+            reporter_phone=found_form.reporter_phone.data
         )
         db.session.add(item)
         db.session.flush()
-        if form.photos.data:
+        if found_form.photos.data:
             from models import ItemPhoto
-            for f in form.photos.data:
+            for f in found_form.photos.data:
                 if f and allowed_file(f.filename):
                     filename = secure_filename(f.filename)
                     chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
@@ -106,7 +110,8 @@ def create_found():
         flash("Objet trouvé enregistré !", "success")
         return redirect(url_for('main.list_items', status='found'))
 
-    return render_template('found_form.html', form=form, action='found')
+    return render_template('report.html', lost_form=lost_form, found_form=found_form)
+
 
 @bp.route('/items/<status>')
 def list_items(status):

@@ -1,0 +1,33 @@
+<div class="mb-3">
+  {{ form.title.label(class="form-label") }}
+  {{ form.title(class="form-control") }}
+</div>
+<div class="mb-3">
+  {{ form.comments.label(class="form-label") }}
+  {{ form.comments(class="form-control", rows="3") }}
+</div>
+<div class="mb-3">
+  {{ form.location.label(class="form-label") }}
+  {{ form.location(class="form-control") }}
+</div>
+<div class="mb-3">
+  {{ form.category.label(class="form-label") }}
+  {{ form.category(class="form-select") }}
+</div>
+<div class="mb-3">
+  {{ form.reporter_name.label(class="form-label") }}
+  {{ form.reporter_name(class="form-control") }}
+</div>
+<div class="mb-3">
+  {{ form.reporter_email.label(class="form-label") }}
+  {{ form.reporter_email(class="form-control") }}
+</div>
+<div class="mb-3">
+  {{ form.reporter_phone.label(class="form-label") }}
+  {{ form.reporter_phone(class="form-control") }}
+</div>
+<div class="mb-3">
+  {{ form.photos.label(class="form-label") }}
+  {{ form.photos(class="form-control", accept="image/*", capture="environment", multiple=True) }}
+  <div class="form-text">Formats autorisés : jpg, jpeg, png. Max 30 Mo.</div>
+</div>
