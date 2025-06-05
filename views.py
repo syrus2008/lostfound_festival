@@ -54,15 +54,17 @@ def create_lost():
             reporter_email=form.reporter_email.data,
             reporter_phone=form.reporter_phone.data
         )
-        if form.photo.data:
-            f = form.photo.data
-            if allowed_file(f.filename):
-                filename = secure_filename(f.filename)
-                chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                f.save(chemin)
-                item.photo_filename = filename
-
         db.session.add(item)
+        db.session.flush()  # pour avoir l'id
+        if form.photos.data:
+            from models import ItemPhoto
+            for f in form.photos.data:
+                if f and allowed_file(f.filename):
+                    filename = secure_filename(f.filename)
+                    chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                    f.save(chemin)
+                    photo = ItemPhoto(item_id=item.id, filename=filename)
+                    db.session.add(photo)
         db.session.commit()
         flash("Objet perdu enregistré !", "success")
         return redirect(url_for('main.list_items', status='lost'))
@@ -89,15 +91,17 @@ def create_found():
             reporter_email=form.reporter_email.data,
             reporter_phone=form.reporter_phone.data
         )
-        if form.photo.data:
-            f = form.photo.data
-            if allowed_file(f.filename):
-                filename = secure_filename(f.filename)
-                chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                f.save(chemin)
-                item.photo_filename = filename
-
         db.session.add(item)
+        db.session.flush()
+        if form.photos.data:
+            from models import ItemPhoto
+            for f in form.photos.data:
+                if f and allowed_file(f.filename):
+                    filename = secure_filename(f.filename)
+                    chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                    f.save(chemin)
+                    photo = ItemPhoto(item_id=item.id, filename=filename)
+                    db.session.add(photo)
         db.session.commit()
         flash("Objet trouvé enregistré !", "success")
         return redirect(url_for('main.list_items', status='found'))
@@ -195,6 +199,15 @@ def detail_item(item_id):
         item.claimant_email = form.claimant_email.data
         item.claimant_phone = form.claimant_phone.data
         item.return_date = datetime.utcnow()
+        if form.photos.data:
+            for f in form.photos.data:
+                if f and allowed_file(f.filename):
+                    filename = secure_filename(f.filename)
+                    chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                    f.save(chemin)
+                    photo = ItemPhoto(item_id=item.id, filename=filename)
+                    photo = ItemPhoto(item=item, filename=filename)
+                    db.session.add(photo)
         db.session.commit()
         flash("Réclamation enregistrée et objet marqué comme rendu !", "success")
         return redirect(url_for('main.list_items', status='returned'))
@@ -231,14 +244,15 @@ def edit_item(item_id):
         item.reporter_name = form.reporter_name.data
         item.reporter_email = form.reporter_email.data
         item.reporter_phone = form.reporter_phone.data
-        if form.photo.data:
-            f = form.photo.data
-            if allowed_file(f.filename):
-                filename = secure_filename(f.filename)
-                chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-                f.save(chemin)
-                item.photo_filename = filename
-
+        if form.photos.data:
+            from models import ItemPhoto
+            for f in form.photos.data:
+                if f and allowed_file(f.filename):
+                    filename = secure_filename(f.filename)
+                    chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+                    f.save(chemin)
+                    photo = ItemPhoto(item_id=item.id, filename=filename)
+                    db.session.add(photo)
         db.session.commit()
         flash("Objet mis à jour !", "success")
         return redirect(url_for('main.detail_item', item_id=item.id))

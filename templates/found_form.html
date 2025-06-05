@@ -32,9 +32,9 @@
       {{ form.reporter_phone(class="form-control", placeholder="Votre téléphone (facultatif)") }}
     </div>
     <div class="mb-3">
-      {{ form.photo.label(class="form-label") }}
-      {{ form.photo(class="form-control") }}
-      <div class="form-text">Formats autorisés : jpg, jpeg, png. Max 5 Mo.</div>
+      {{ form.photos.label(class="form-label") }}
+      {{ form.photos(class="form-control", accept="image/*", capture="environment", multiple=True) }}
+      <div class="form-text">Formats autorisés : jpg, jpeg, png. Max 30 Mo.</div>
     </div>
     <button type="submit" class="btn btn-primary">Envoyer</button>
   </form>

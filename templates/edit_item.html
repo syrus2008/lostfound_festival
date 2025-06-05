@@ -32,12 +32,18 @@
       {{ form.reporter_phone(class="form-control") }}
     </div>
     <div class="mb-3">
-      {{ form.photo.label(class="form-label") }}
-      {{ form.photo(class="form-control") }}
-      {% if item.photo_filename %}
-        <small>Photo actuelle : {{ item.photo_filename }}</small><br>
+      {{ form.photos.label(class="form-label") }}
+      {{ form.photos(class="form-control", accept="image/*", capture="environment", multiple=True) }}
+      {% if item.photos and item.photos|length > 0 %}
+        <div class="mb-2">Photos actuelles :
+          <div class="d-flex flex-wrap gap-2">
+            {% for photo in item.photos %}
+              <img src="{{ url_for('main.uploaded_file', filename=photo.filename) }}" class="img-thumbnail" style="max-width: 120px; max-height: 120px;" alt="Photo">
+            {% endfor %}
+          </div>
+        </div>
       {% endif %}
-      <div class="form-text">Formats autorisés : jpg, jpeg, png. Max 5 Mo.</div>
+      <div class="form-text">Formats autorisés : jpg, jpeg, png. Max 30 Mo.</div>
     </div>
     <button type="submit" class="btn btn-success">Enregistrer</button>
   </form>

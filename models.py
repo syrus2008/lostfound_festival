@@ -28,12 +28,19 @@ class Item(db.Model):
     reporter_name = db.Column(db.String(100), nullable=False)
     reporter_email = db.Column(db.String(150), nullable=False)
     reporter_phone = db.Column(db.String(50), nullable=True)
-    photo_filename = db.Column(db.String(200), nullable=True)
+    photo_filename = db.Column(db.String(200), nullable=True)  # Pour compatibilité
     claimant_name = db.Column(db.String(100), nullable=True)
     claimant_email = db.Column(db.String(150), nullable=True)
     claimant_phone = db.Column(db.String(50), nullable=True)
     return_date = db.Column(db.DateTime, nullable=True)
     return_comment = db.Column(db.Text, nullable=True)
+    photos = db.relationship('ItemPhoto', backref='item', lazy=True)
 
     def __repr__(self):
         return f'<Item {self.id} {self.title} ({self.status.value})>'
+
+class ItemPhoto(db.Model):
+    __tablename__ = 'item_photos'
+    id = db.Column(db.Integer, primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=False)
+    filename = db.Column(db.String(200), nullable=False)

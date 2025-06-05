@@ -4,7 +4,13 @@
     <div class="col-md-6">
 
       {# Affiche la photo si elle existe, sinon placeholder #}
-      {% if item.photo_filename %}
+      {% if item.photos and item.photos|length > 0 %}
+        <div class="mb-3 d-flex flex-wrap gap-2">
+          {% for photo in item.photos %}
+            <img src="{{ url_for('main.uploaded_file', filename=photo.filename) }}" class="img-thumbnail" style="max-width: 220px; max-height: 220px;" alt="Photo">
+          {% endfor %}
+        </div>
+      {% elif item.photo_filename %}
         <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}"
              class="img-fluid mb-3" alt="Photo">
       {% else %}
@@ -81,6 +87,11 @@
           <div class="mb-3">
             {{ form.claimant_phone.label(class="form-label") }}
             {{ form.claimant_phone(class="form-control", placeholder="Votre téléphone (facultatif)") }}
+          </div>
+          <div class="mb-3">
+            {{ form.photos.label(class="form-label") }}
+            {{ form.photos(class="form-control", accept="image/*", capture="environment", multiple=True) }}
+            <div class="form-text">Formats autorisés : jpg, jpeg, png. Max 30 Mo.</div>
           </div>
           <button type="submit" name="submit" class="btn btn-success">{{ form.submit.label.text }}</button>
         </form>
