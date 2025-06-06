@@ -30,12 +30,12 @@
             <div class="position-relative" style="height: 420px;">
               {% for obj in group %}
                 <a href="{{ url_for('main.detail_item', item_id=obj.id) }}" class="text-decoration-none">
-                  <div class="card h-100 position-absolute shadow-sm border-0 rounded-4 card-hover-effect superposed-card"
-                       style="width: 100%; top: {{ loop.index0 * 30 }}px; left: {{ loop.index0 * 30 }}px; z-index: {{ 10 - loop.index0 }};">
+                  <div class="card h-100 position-absolute superposed-card"
+                        style="width: 100%; top: {{ loop.index0 * 30 }}px; left: {{ loop.index0 * 30 }}px; z-index: {{ 10 - loop.index0 }};">
                     {% if obj.photos and obj.photos|length > 0 %}
-                      <img src="{{ url_for('main.uploaded_file', filename=obj.photos[0].filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
+                      <img src="{{ url_for('main.uploaded_file', filename=obj.photos[0].filename) }}" class="card-img-top" alt="Photo">
                     {% elif obj.photo_filename %}
-                      <img src="{{ url_for('main.uploaded_file', filename=obj.photo_filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
+                      <img src="{{ url_for('main.uploaded_file', filename=obj.photo_filename) }}" class="card-img-top" alt="Photo">
                     {% else %}
                       <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
                         <span class="text-muted">Pas de photo</span>
@@ -77,39 +77,37 @@
         </div>
       {% endfor %}
     </div>
-    {% if pagination.pages > 1 %}
-      <nav aria-label="Pagination" class="mt-4">
-        <ul class="pagination justify-content-center">
-          {% if pagination.has_prev %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('main.list_items', status=status, page=pagination.prev_num, q=search_query, category=selected_category) }}">Précédent</a>
-            </li>
-          {% else %}
-            <li class="page-item disabled"><span class="page-link">Précédent</span></li>
-          {% endif %}
-          {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-            {% if p %}
-              {% if p == pagination.page %}
-                <li class="page-item active"><span class="page-link">{{ p }}</span></li>
-              {% else %}
-                <li class="page-item">
-                  <a class="page-link" href="{{ url_for('main.list_items', status=status, page=p, q=search_query, category=selected_category) }}">{{ p }}</a>
-                </li>
-              {% endif %}
-            {% else %}
-              <li class="page-item disabled"><span class="page-link">…</span></li>
-            {% endif %}
-          {% endfor %}
-          {% if pagination.has_next %}
-            <li class="page-item">
-              <a class="page-link" href="{{ url_for('main.list_items', status=status, page=pagination.next_num, q=search_query, category=selected_category) }}">Suivant</a>
-            </li>
-          {% else %}
-            <li class="page-item disabled"><span class="page-link">Suivant</span></li>
-          {% endif %}
-        </ul>
-      </nav>
+    <nav aria-label="Pagination" class="mt-4">
+  <ul class="pagination justify-content-center">
+    {% if pagination.has_prev %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('main.list_items', status=status, page=pagination.prev_num, q=search_query, category=selected_category) }}">Précédent</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Précédent</span></li>
     {% endif %}
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+      {% if p %}
+        {% if p == pagination.page %}
+          <li class="page-item active"><span class="page-link">{{ p }}</span></li>
+        {% else %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('main.list_items', status=status, page=p, q=search_query, category=selected_category) }}">{{ p }}</a>
+          </li>
+        {% endif %}
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+      {% endif %}
+    {% endfor %}
+    {% if pagination.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('main.list_items', status=status, page=pagination.next_num, q=search_query, category=selected_category) }}">Suivant</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled"><span class="page-link">Suivant</span></li>
+    {% endif %}
+  </ul>
+</nav>
 {% else %}
     <p>Aucun objet {{ status }} pour le moment.</p>
 {% endif %}
