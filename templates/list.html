@@ -41,6 +41,7 @@
                     <form method="post" action="{{ url_for('main.delete_item', item_id=item.id) }}"
                           onsubmit="return confirm('Confirmer la suppression ?');">
                       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <input type="password" name="delete_password" class="form-control mb-2" placeholder="Mot de passe suppression" required>
                       <button class="dropdown-item text-danger">Supprimer</button>
                     </form>
                   </li>

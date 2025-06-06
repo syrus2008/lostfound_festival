@@ -268,6 +268,10 @@ def edit_item(item_id):
 @bp.route('/item/<int:item_id>/delete', methods=['POST'])
 def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
+    password = request.form.get('delete_password')
+    if password != '7120':
+        flash("Mot de passe incorrect : suppression annulée.", "danger")
+        return redirect(url_for('main.list_items', status=item.status.value))
     db.session.delete(item)
     db.session.commit()
     flash("Objet supprimé définitivement !", "danger")
