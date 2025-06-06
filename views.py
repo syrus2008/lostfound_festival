@@ -32,7 +32,8 @@ def find_similar_items(titre, category_id, seuil=70):
 
 @bp.route('/')
 def index():
-    return render_template('index.html')
+    latest_found_items = Item.query.filter_by(status=Status.FOUND).order_by(Item.date_reported.desc()).limit(10).all()
+    return render_template('index.html', latest_found_items=latest_found_items)
 
 @bp.route('/lost/new')
 def redirect_lost():
