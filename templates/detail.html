@@ -98,10 +98,13 @@
       {% endif %}
       <hr>
       <form method="post" action="{{ url_for('main.delete_item', item_id=item.id) }}" class="mt-4">
-        {{ csrf_token() }}
+        {{ delete_form.hidden_tag() }}
         <div class="mb-2">
           <label for="delete_password" class="form-label text-danger"><i class="bi bi-exclamation-triangle"></i> Mot de passe suppression :</label>
-          <input type="password" name="delete_password" id="delete_password" class="form-control" placeholder="Mot de passe" required autocomplete="off">
+          {{ delete_form.delete_password(class="form-control", placeholder="Mot de passe", autocomplete="off") }}
+          {% if delete_form.delete_password.errors %}
+            <div class="text-danger small">{{ delete_form.delete_password.errors[0] }}</div>
+          {% endif %}
         </div>
         <button type="submit" class="btn btn-danger btn-lg w-100 mt-2"><i class="bi bi-trash"></i> Supprimer définitivement</button>
         <div class="form-text text-danger">Action irréversible : suppression totale de l’objet.</div>

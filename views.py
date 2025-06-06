@@ -237,13 +237,16 @@ def detail_item(item_id):
         flash("Réclamation enregistrée et objet marqué comme rendu !", "success")
         return redirect(url_for('main.list_items', status='returned'))
 
+    from forms import DeleteForm
+    delete_form = DeleteForm()
     return render_template(
         'detail.html',
         item=item,
         form=form,
         can_claim=True,
         Status=Status,
-        match_form=match_form
+        match_form=match_form,
+        delete_form=delete_form
     )
 
 @bp.route('/item/<int:item_id>/edit', methods=['GET', 'POST'])
@@ -287,11 +290,15 @@ def edit_item(item_id):
 
 @bp.route('/item/<int:item_id>/delete', methods=['POST'])
 def delete_item(item_id):
+    from forms import DeleteForm
     item = Item.query.get_or_404(item_id)
-    password = request.form.get('delete_password')
-    if not password:
-        flash("Mot de passe requis pour supprimer l’objet.", "danger")
+    delete_form = DeleteForm()
+    if not delete_form.validate_on_submit():
+        for field, errors in delete_form.errors.items():
+            for error in errors:
+                flash(error, 'danger')
         return redirect(url_for('main.detail_item', item_id=item.id)), 400
+    password = delete_form.delete_password.data
     if password != '7120':
         flash("Mot de passe incorrect : suppression annulée.", "danger")
         return redirect(url_for('main.detail_item', item_id=item.id)), 400
