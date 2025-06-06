@@ -34,7 +34,7 @@ class Item(db.Model):
     claimant_phone = db.Column(db.String(50), nullable=True)
     return_date = db.Column(db.DateTime, nullable=True)
     return_comment = db.Column(db.Text, nullable=True)
-    photos = db.relationship('ItemPhoto', backref='item', lazy=True)
+    photos = db.relationship('ItemPhoto', backref='item', lazy=True, cascade="all, delete-orphan")
 
     def __repr__(self):
         return f'<Item {self.id} {self.title} ({self.status.value})>'
