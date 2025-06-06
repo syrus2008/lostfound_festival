@@ -33,3 +33,7 @@ class MatchForm(FlaskForm):
         validators=[DataRequired()]
     )
     submit_match = SubmitField("Confirmer correspondance")
+
+class DeleteForm(FlaskForm):
+    delete_password = StringField('Mot de passe', validators=[DataRequired()])
+    submit = SubmitField('Supprimer définitivement')
