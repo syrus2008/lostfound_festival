@@ -22,43 +22,75 @@
       <button type="submit" class="btn btn-outline-primary">Filtrer</button>
     </div>
   </form>
-  {% if items %}
+   {% if grouped_items %}
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-      {% for item in items %}
+      {% for group in grouped_items %}
         <div class="col">
-          <div class="card h-100 position-relative shadow-sm border-0 rounded-4 card-hover-effect">
-            <div class="position-absolute top-0 end-0 p-2">
-              <div class="dropdown">
-                <button class="btn btn-sm btn-light dropdown-toggle" type="button"
-                        id="dropdownMenuButton{{ item.id }}" data-bs-toggle="dropdown">
-                  …
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton{{ item.id }}">
-                  <li>
-                    <a class="dropdown-item" href="{{ url_for('main.edit_item', item_id=item.id) }}">Modifier</a>
-                  </li>
-                  <li>
-                    <form method="post" action="{{ url_for('main.delete_item', item_id=item.id) }}"
-                          onsubmit="return confirm('Confirmer la suppression ?');">
-                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                      <input type="password" name="delete_password" class="form-control mb-2" placeholder="Mot de passe suppression" required>
-                      <button class="dropdown-item text-danger">Supprimer</button>
-                    </form>
-                  </li>
-                </ul>
-              </div>
+          {% if group|length == 2 %}
+            <div class="position-relative" style="height: 420px;">
+              {% for obj in group %}
+                <a href="{{ url_for('main.detail_item', item_id=obj.id) }}" class="text-decoration-none">
+                  <div class="card h-100 position-absolute shadow-sm border-0 rounded-4 card-hover-effect superposed-card"
+                       style="width: 100%; top: {{ loop.index0 * 30 }}px; left: {{ loop.index0 * 30 }}px; z-index: {{ 10 - loop.index0 }};">
+                    {% if obj.photos and obj.photos|length > 0 %}
+                      <img src="{{ url_for('main.uploaded_file', filename=obj.photos[0].filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
+                    {% elif obj.photo_filename %}
+                      <img src="{{ url_for('main.uploaded_file', filename=obj.photo_filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
+                    {% else %}
+                      <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <span class="text-muted">Pas de photo</span>
+                      </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                      <h5 class="card-title fw-bold mb-2"><i class="bi bi-box-seam text-primary"></i> {{ obj.title }}</h5>
+                      <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-tag"></i> {{ obj.category.name }}</small></p>
+                      <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-geo-alt"></i> {{ obj.location or '—' }}</small></p>
+                      <p class="card-text mb-2"><small class="text-muted"><i class="bi bi-calendar-event"></i> {{ obj.date_reported.strftime('%d/%m/%Y') }}</small></p>
+                      <span class="badge bg-secondary">ID #{{ obj.id }}</span>
+                    </div>
+                  </div>
+                </a>
+              {% endfor %}
             </div>
-            {% if item.photos and item.photos|length > 0 %}
-  <img src="{{ url_for('main.uploaded_file', filename=item.photos[0].filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
-{% elif item.photo_filename %}
-  <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
-{% else %}
-  <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-    <span class="text-muted">Pas de photo</span>
-  </div>
-{% endif %}
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title fw-bold mb-2"><i class="bi bi-box-seam text-primary"></i> {{ item.title }}</h5>
+          {% else %}
+            <div class="card h-100 position-relative shadow-sm border-0 rounded-4 card-hover-effect">
+              <a href="{{ url_for('main.detail_item', item_id=group[0].id) }}" class="text-decoration-none">
+                {% if group[0].photos and group[0].photos|length > 0 %}
+                  <img src="{{ url_for('main.uploaded_file', filename=group[0].photos[0].filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
+                {% elif group[0].photo_filename %}
+                  <img src="{{ url_for('main.uploaded_file', filename=group[0].photo_filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
+                {% else %}
+                  <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <span class="text-muted">Pas de photo</span>
+                  </div>
+                {% endif %}
+                <div class="card-body d-flex flex-column">
+                  <h5 class="card-title fw-bold mb-2"><i class="bi bi-box-seam text-primary"></i> {{ group[0].title }}</h5>
+                  <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-tag"></i> {{ group[0].category.name }}</small></p>
+                  <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-geo-alt"></i> {{ group[0].location or '—' }}</small></p>
+                  <p class="card-text mb-2"><small class="text-muted"><i class="bi bi-calendar-event"></i> {{ group[0].date_reported.strftime('%d/%m/%Y') }}</small></p>
+                  <span class="badge bg-secondary">ID #{{ group[0].id }}</span>
+                </div>
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+   {% else %}
+    <p>Aucun objet {{ status }} pour le moment.</p>
+   {% endif %}
+{% endblock %}
+<style>
+.superposed-card {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.09) !important;
+  transition: box-shadow 0.2s;
+}
+.superposed-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.20) !important;
+  z-index: 20;
+}
+</style>
 <p class="card-text mb-1">
   <small class="text-muted"><i class="bi bi-tag"></i> {{ item.category.name }}</small>
 </p>

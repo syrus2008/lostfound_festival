@@ -25,6 +25,8 @@ class Item(db.Model):
     date_reported = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
     category = db.relationship('Category', backref=db.backref('items', lazy=True))
+    matched_with_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=True)
+    matched_with = db.relationship('Item', remote_side='Item.id', uselist=False)
     reporter_name = db.Column(db.String(100), nullable=False)
     reporter_email = db.Column(db.String(150), nullable=False)
     reporter_phone = db.Column(db.String(50), nullable=True)

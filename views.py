@@ -136,11 +136,32 @@ def list_items(status):
     items = pagination.items
     categories = Category.query.order_by(Category.name).all()
 
+    # Construction des groupes pour affichage superposé
+    seen = set()
+    grouped_items = []
+    for item in items:
+        if item.id in seen:
+            continue
+        if item.matched_with_id:
+            # Cherche l’autre objet lié (présent ou non dans la page)
+            other = next((i for i in items if i.id == item.matched_with_id), None)
+            if other:
+                grouped_items.append([item, other])
+                seen.add(item.id)
+                seen.add(other.id)
+            else:
+                grouped_items.append([item])
+                seen.add(item.id)
+        else:
+            grouped_items.append([item])
+            seen.add(item.id)
+
     return render_template(
         'list.html',
         items=items,
-        status=st.value,
+        grouped_items=grouped_items,
         pagination=pagination,
+        status=st.value,
         categories=categories,
         selected_category=cat_filter,
         search_query=q
@@ -176,25 +197,12 @@ def detail_item(item_id):
         if other_id and other_id != 0:
             other = Item.query.get_or_404(other_id)
 
-            # Mettre les deux objets en RETURNED
-            now = datetime.utcnow()
-            item.status = Status.RETURNED
-            item.claimant_name = other.reporter_name
-            item.claimant_email = other.reporter_email
-            item.claimant_phone = other.reporter_phone
-            item.return_date = now
-            item.return_comment = f"Correspondance validée avec l'objet #{other.id}"
-
-            other.status = Status.RETURNED
-            other.claimant_name = item.reporter_name
-            other.claimant_email = item.reporter_email
-            other.claimant_phone = item.reporter_phone
-            other.return_date = now
-            other.return_comment = f"Correspondance validée avec l'objet #{item.id}"
-
+            # Lier explicitement les deux objets (liaison bidirectionnelle)
+            item.matched_with_id = other.id
+            other.matched_with_id = item.id
             db.session.commit()
-            flash(f"Objets #{item.id} et #{other.id} marqués comme rendus.", "success")
-            return redirect(url_for('main.list_items', status='returned'))
+            flash(f"Objets #{item.id} et #{other.id} liés par correspondance.", "success")
+            return redirect(url_for('main.detail_item', item_id=item.id))
         else:
             flash("Veuillez sélectionner un objet valide pour la correspondance.", "warning")
 
@@ -215,6 +223,17 @@ def detail_item(item_id):
                     photo = ItemPhoto(item=item, filename=filename)
                     db.session.add(photo)
         db.session.commit()
+        # Synchronisation automatique : si l’objet est lié, on marque aussi l’autre comme rendu
+        if item.matched_with_id:
+            other = Item.query.get(item.matched_with_id)
+            if other and other.status != Status.RETURNED:
+                other.status = Status.RETURNED
+                other.claimant_name = item.claimant_name
+                other.claimant_email = item.claimant_email
+                other.claimant_phone = item.claimant_phone
+                other.return_date = item.return_date
+                other.return_comment = f"Synchronisé avec l’objet #{item.id} (restitution liée)"
+                db.session.commit()
         flash("Réclamation enregistrée et objet marqué comme rendu !", "success")
         return redirect(url_for('main.list_items', status='returned'))
 
