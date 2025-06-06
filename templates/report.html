@@ -27,7 +27,8 @@
               {% endwith %}
               <form method="post" enctype="multipart/form-data">
                 {{ lost_form.hidden_tag() }}
-                {% include "_item_form_fields.html" with form=lost_form %}
+                {% set form = lost_form %}
+                {% include '_item_form_fields.html' %}
                 <button type="submit" name="submit_lost" class="btn btn-primary">Signaler perdu</button>
               </form>
             </div>
@@ -52,7 +53,8 @@
               {% endwith %}
               <form method="post" enctype="multipart/form-data">
                 {{ found_form.hidden_tag() }}
-                {% include "_item_form_fields.html" with form=found_form %}
+                {% set form = found_form %}
+                {% include '_item_form_fields.html' %}
                 <button type="submit" name="submit_found" class="btn btn-success">Signaler trouvé</button>
               </form>
             </div>
