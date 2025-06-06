@@ -291,11 +291,15 @@ def delete_item(item_id):
     password = request.form.get('delete_password')
     if password != '7120':
         flash("Mot de passe incorrect : suppression annulée.", "danger")
-        return redirect(url_for('main.list_items', status=item.status.value))
+        return redirect(url_for('main.detail_item', item_id=item.id))
+    old_status = item.status.value if hasattr(item, 'status') else 'lost'
     db.session.delete(item)
     db.session.commit()
     flash("Objet supprimé définitivement !", "danger")
-    return redirect(url_for('main.list_items', status=item.status.value))
+    # Redirige vers la bonne liste selon l'ancien statut
+    if old_status in ['lost', 'found', 'returned']:
+        return redirect(url_for('main.list_items', status=old_status))
+    return redirect(url_for('main.index'))
 
 @bp.route('/export/<status>')
 def export_items(status):
