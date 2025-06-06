@@ -174,8 +174,10 @@ def detail_item(item_id):
     match_form = None
 
     # Si l'objet est déjà rendu, pas de correspondance ni réclamation
+    from forms import DeleteForm
+    delete_form = DeleteForm()
     if item.status == Status.RETURNED:
-        return render_template('detail.html', item=item, can_claim=False, Status=Status)
+        return render_template('detail.html', item=item, can_claim=False, Status=Status, delete_form=delete_form)
 
     # Préparer le formulaire de correspondance pour LOST ↔ FOUND, même catégorie
     if item.status in (Status.LOST, Status.FOUND):
