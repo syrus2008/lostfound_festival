@@ -98,6 +98,7 @@
       {% endif %}
       <hr>
       <form method="post" action="{{ url_for('main.delete_item', item_id=item.id) }}" class="mt-4">
+        {{ csrf_token() }}
         <div class="mb-2">
           <label for="delete_password" class="form-label text-danger"><i class="bi bi-exclamation-triangle"></i> Mot de passe suppression :</label>
           <input type="password" name="delete_password" id="delete_password" class="form-control" placeholder="Mot de passe" required autocomplete="off">
