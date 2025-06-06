@@ -66,7 +66,7 @@ def report_item():
             reporter_phone=lost_form.reporter_phone.data
         )
         db.session.add(item)
-        db.session.flush()
+        db.session.flush()  # On s'assure que item.id est disponible
         if lost_form.photos.data:
             from models import ItemPhoto
             for f in lost_form.photos.data:
@@ -76,7 +76,7 @@ def report_item():
                     f.save(chemin)
                     photo = ItemPhoto(item_id=item.id, filename=filename)
                     db.session.add(photo)
-        db.session.commit()
+        db.session.commit()  # Commit après ajout des photos
         flash("Objet perdu enregistré !", "success")
         return redirect(url_for('main.list_items', status='lost'))
 
@@ -96,7 +96,7 @@ def report_item():
             reporter_phone=found_form.reporter_phone.data
         )
         db.session.add(item)
-        db.session.flush()
+        db.session.flush()  # On s'assure que item.id est disponible
         if found_form.photos.data:
             from models import ItemPhoto
             for f in found_form.photos.data:
@@ -106,7 +106,7 @@ def report_item():
                     f.save(chemin)
                     photo = ItemPhoto(item_id=item.id, filename=filename)
                     db.session.add(photo)
-        db.session.commit()
+        db.session.commit()  # Commit après ajout des photos
         flash("Objet trouvé enregistré !", "success")
         return redirect(url_for('main.list_items', status='found'))
 
@@ -249,6 +249,7 @@ def edit_item(item_id):
         item.reporter_name = form.reporter_name.data
         item.reporter_email = form.reporter_email.data
         item.reporter_phone = form.reporter_phone.data
+        db.session.commit()  # Commit d'abord l'objet pour garantir item.id
         if form.photos.data:
             from models import ItemPhoto
             for f in form.photos.data:
@@ -258,7 +259,7 @@ def edit_item(item_id):
                     f.save(chemin)
                     photo = ItemPhoto(item_id=item.id, filename=filename)
                     db.session.add(photo)
-        db.session.commit()
+            db.session.commit()  # Commit ensuite les photos
         flash("Objet mis à jour !", "success")
         return redirect(url_for('main.detail_item', item_id=item.id))
 
