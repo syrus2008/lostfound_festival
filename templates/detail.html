@@ -5,11 +5,13 @@
 
       {# Affiche la photo si elle existe, sinon placeholder #}
       {% if item.photos and item.photos|length > 0 %}
-        <div class="mb-3 d-flex flex-wrap gap-2">
-          {% for photo in item.photos %}
-            <img src="{{ url_for('main.uploaded_file', filename=photo.filename) }}" class="img-thumbnail" style="max-width: 220px; max-height: 220px;" alt="Photo">
-          {% endfor %}
-        </div>
+        <div class="row g-2 mb-3">
+  {% for photo in item.photos %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <img src="{{ url_for('main.uploaded_file', filename=photo.filename) }}" class="img-thumbnail w-100 shadow-sm" style="aspect-ratio: 1/1; object-fit: cover;" alt="Photo">
+    </div>
+  {% endfor %}
+</div>
       {% elif item.photo_filename %}
         <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}"
              class="img-fluid mb-3" alt="Photo">
@@ -20,17 +22,15 @@
       {% endif %}
 
       {# Détails de l'objet #}
-      <h3>{{ item.title }}</h3>
-      <p><strong>Catégorie :</strong>
-        {% if item.category %}
-          {{ item.category.name }}
-        {% else %}
-          —
-        {% endif %}
-      </p>
-      <p><strong>Lieu :</strong> {{ item.location or '—' }}</p>
-      <p><strong>Date signalement :</strong> {{ item.date_reported.strftime('%d/%m/%Y %H:%M') }}</p>
-      <p><strong>Description :</strong><br> {{ item.comments or '—' }}</p>
+      <h3 class="fw-bold mb-3"><i class="bi bi-box-seam text-primary"></i> {{ item.title }}</h3>
+      <div class="card p-3 mb-3 bg-light border-0">
+  <p class="mb-2"><i class="bi bi-tag text-secondary"></i> <strong>Catégorie :</strong>
+    {% if item.category %}{{ item.category.name }}{% else %}—{% endif %}
+  </p>
+  <p class="mb-2"><i class="bi bi-geo-alt text-danger"></i> <strong>Lieu :</strong> {{ item.location or '—' }}</p>
+  <p class="mb-2"><i class="bi bi-calendar-event text-info"></i> <strong>Date signalement :</strong> {{ item.date_reported.strftime('%d/%m/%Y %H:%M') }}</p>
+  <p class="mb-0"><i class="bi bi-chat-left-text text-success"></i> <strong>Description :</strong><br> {{ item.comments or '—' }}</p>
+</div>
 
       <hr>
       <h5>Informations déclarant</h5>

@@ -26,7 +26,7 @@
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
       {% for item in items %}
         <div class="col">
-          <div class="card h-100 position-relative">
+          <div class="card h-100 position-relative shadow-sm border-0 rounded-4 card-hover-effect">
             <div class="position-absolute top-0 end-0 p-2">
               <div class="dropdown">
                 <button class="btn btn-sm btn-light dropdown-toggle" type="button"
@@ -47,18 +47,26 @@
                 </ul>
               </div>
             </div>
-            {% if item.photo_filename %}
-              <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}"
-                   class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
-            {% else %}
-              <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                <span class="text-muted">Pas de photo</span>
-              </div>
-            {% endif %}
+            {% if item.photos and item.photos|length > 0 %}
+  <img src="{{ url_for('main.uploaded_file', filename=item.photos[0].filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
+{% elif item.photo_filename %}
+  <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
+{% else %}
+  <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+    <span class="text-muted">Pas de photo</span>
+  </div>
+{% endif %}
             <div class="card-body d-flex flex-column">
-              <h5 class="card-title">{{ item.title }}</h5>
-              <p class="card-text mb-1">
-                <small class="text-muted">{{ item.category.name }}</small>
+              <h5 class="card-title fw-bold mb-2"><i class="bi bi-box-seam text-primary"></i> {{ item.title }}</h5>
+<p class="card-text mb-1">
+  <small class="text-muted"><i class="bi bi-tag"></i> {{ item.category.name }}</small>
+</p>
+<p class="card-text mb-1">
+  <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ item.location or '—' }}</small>
+</p>
+<p class="card-text mb-2">
+  <small class="text-muted"><i class="bi bi-calendar-event"></i> {{ item.date_reported.strftime('%d/%m/%Y') }}</small>
+</p>
               </p>
               <p class="card-text mb-1">
                 <small class="text-muted">{{ item.location or '—' }}</small>

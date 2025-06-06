@@ -7,7 +7,11 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+  <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top custom-navbar">
+  <div class="container-fluid">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
+      <span class="fs-4 text-primary"><i class="bi bi-search"></i></span> Lost & Found
+    </a>
     <div class="container-fluid">
       <a class="navbar-brand" href="{{ url_for('main.index') }}">Lost & Found</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -40,7 +44,13 @@
         </ul>
       </div>
     </div>
-  </nav>
+</nav>
+
+<footer class="footer mt-auto py-3 bg-light border-top custom-footer">
+  <div class="container text-center text-muted small">
+    <span>&copy; {{ 2025 }} Lost &amp; Found Festival &mdash; <a href="mailto:contact@festival.com" class="text-decoration-none">Contact</a></span>
+  </div>
+</footer>
 
   <div class="container mt-4">
     {% with messages = get_flashed_messages(with_categories=true) %}
