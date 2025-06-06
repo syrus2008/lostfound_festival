@@ -289,9 +289,12 @@ def edit_item(item_id):
 def delete_item(item_id):
     item = Item.query.get_or_404(item_id)
     password = request.form.get('delete_password')
+    if not password:
+        flash("Mot de passe requis pour supprimer l’objet.", "danger")
+        return redirect(url_for('main.detail_item', item_id=item.id)), 400
     if password != '7120':
         flash("Mot de passe incorrect : suppression annulée.", "danger")
-        return redirect(url_for('main.detail_item', item_id=item.id))
+        return redirect(url_for('main.detail_item', item_id=item.id)), 400
     old_status = item.status.value if hasattr(item, 'status') else 'lost'
     db.session.delete(item)
     db.session.commit()
