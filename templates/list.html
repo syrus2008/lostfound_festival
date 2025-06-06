@@ -85,34 +85,6 @@
 .superposed-card {
   box-shadow: 0 4px 20px rgba(0,0,0,0.09) !important;
   transition: box-shadow 0.2s;
-}
-.superposed-card:hover {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.20) !important;
-  z-index: 20;
-}
-</style>
-<p class="card-text mb-1">
-  <small class="text-muted"><i class="bi bi-tag"></i> {{ item.category.name }}</small>
-</p>
-<p class="card-text mb-1">
-  <small class="text-muted"><i class="bi bi-geo-alt"></i> {{ item.location or '—' }}</small>
-</p>
-<p class="card-text mb-2">
-  <small class="text-muted"><i class="bi bi-calendar-event"></i> {{ item.date_reported.strftime('%d/%m/%Y') }}</small>
-</p>
-              </p>
-              <p class="card-text mb-1">
-                <small class="text-muted">{{ item.location or '—' }}</small>
-              </p>
-              <p class="card-text mb-2">
-                <small class="text-muted">{{ item.date_reported.strftime('%d/%m/%Y') }}</small>
-              </p>
-              <a href="{{ url_for('main.detail_item', item_id=item.id) }}" class="btn btn-primary mt-auto">Voir détail</a>
-            </div>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
     {% if pagination.pages > 1 %}
       <nav aria-label="Pagination" class="mt-4">
         <ul class="pagination justify-content-center">
@@ -146,7 +118,18 @@
         </ul>
       </nav>
     {% endif %}
-  {% else %}
+   {% else %}
     <p>Aucun objet {{ status }} pour le moment.</p>
-  {% endif %}
+   {% endif %}
 {% endblock %}
+
+<style>
+.superposed-card {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.09) !important;
+  transition: box-shadow 0.2s;
+}
+.superposed-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.20) !important;
+  z-index: 20;
+}
+</style>
