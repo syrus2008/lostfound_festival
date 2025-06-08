@@ -116,6 +116,7 @@ def report_item():
 
 @bp.route('/items/<status>')
 def list_items(status):
+    from models import Match
     try:
         st = Status(status)
     except ValueError:
