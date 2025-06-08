@@ -156,6 +156,19 @@ def list_items(status):
             grouped_items.append([item])
             seen.add(item.id)
 
+    # Optimisation : pré-calcule les ids des items affichés
+    all_items = [item for group in grouped_items for item in group]
+    item_ids = [item.id for item in all_items]
+    matches = Match.query.filter(
+        (Match.lost_id.in_(item_ids)) | (Match.found_id.in_(item_ids))
+    ).all()
+    matched_ids = set()
+    for m in matches:
+        matched_ids.add(m.lost_id)
+        matched_ids.add(m.found_id)
+    for item in all_items:
+        item.has_match = item.id in matched_ids
+
     return render_template(
         'list.html',
         items=items,
@@ -371,10 +384,22 @@ def list_matches():
     pairs = get_all_candidate_pairs(seuil=seuil)
     pairs = sorted(pairs, key=lambda x: x[2], reverse=True)
 
-    return render_template('matches.html', pairs=pairs, threshold=seuil)
+    # Ajout d'un booléen is_validated pour chaque paire
+    pairs_with_status = []
+    for lost, found, score in pairs:
+        is_validated = (lost.matched_with_id == found.id) or (found.matched_with_id == lost.id)
+        pairs_with_status.append({
+            'lost': lost,
+            'found': found,
+            'score': score,
+            'is_validated': is_validated
+        })
+
+    return render_template('matches.html', pairs=pairs_with_status, threshold=seuil)
 
 @bp.route('/matches/confirm', methods=['POST'])
 def confirm_match():
+    from models import Match
     try:
         lost_id = int(request.form.get('lost_id'))
         found_id = int(request.form.get('found_id'))
@@ -388,19 +413,26 @@ def confirm_match():
         flash("Objet introuvable pour correspondance.", "danger")
         return redirect(url_for('main.list_matches'))
 
+    # Vérifier si déjà validé (champ matched_with_id ou Match existant)
+    match_exists = Match.query.filter_by(lost_id=lost_id, found_id=found_id).first()
+    if match_exists:
+        flash("Cette paire a déjà été validée.", "info")
+        return redirect(url_for('main.list_matches'))
+
     if lost.status != Status.LOST or found.status != Status.FOUND:
         flash("L’objet n’est plus disponible pour correspondance.", "warning")
         return redirect(url_for('main.list_matches'))
 
+    # Créer l'entrée Match
+    new_match = Match(lost_id=lost_id, found_id=found_id)
+    db.session.add(new_match)
+
     now = datetime.utcnow()
-    lost.status = Status.RETURNED
+    # lost.status = Status.RETURNED  # On ne change plus le statut
     lost.claimant_name = found.reporter_name
     lost.claimant_email = found.reporter_email
     lost.claimant_phone = found.reporter_phone
-    lost.return_date = now
-    lost.return_comment = f"Corrélé avec Found #{found.id}"
-
-    found.status = Status.RETURNED
+    # found.status = Status.RETURNED  # On ne change plus le statut
     found.claimant_name = lost.reporter_name
     found.claimant_email = lost.reporter_email
     found.claimant_phone = lost.reporter_phone

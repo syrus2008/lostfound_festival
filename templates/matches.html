@@ -29,22 +29,36 @@
           </tr>
         </thead>
         <tbody>
-          {% for lost, found, score in pairs %}
+          {% for pair in pairs %}
             <tr>
-              <td>{{ lost.id }}</td>
-              <td>{{ lost.title }}</td>
-              <td>{{ found.id }}</td>
-              <td>{{ found.title }}</td>
-              <td>{{ lost.category.name }}</td>
-              <td>{{ score }}%</td>
+              <td>{{ pair.lost.id }}</td>
               <td>
-                <form method="post" action="{{ url_for('main.confirm_match') }}">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <input type="hidden" name="lost_id" value="{{ lost.id }}">
-                  <input type="hidden" name="found_id" value="{{ found.id }}">
-                  <button type="submit" class="btn btn-sm btn-success">Valider</button>
-                  <a href="{{ url_for('main.list_matches') }}" class="btn btn-sm btn-secondary">Ignorer</a>
-                </form>
+                {{ pair.lost.title }}
+                {% if pair.is_validated %}
+                  <span class="badge bg-success ms-2">✔ Match validé</span>
+                {% endif %}
+              </td>
+              <td>{{ pair.found.id }}</td>
+              <td>
+                {{ pair.found.title }}
+                {% if pair.is_validated %}
+                  <span class="badge bg-success ms-2">✔ Match validé</span>
+                {% endif %}
+              </td>
+              <td>{{ pair.lost.category.name if pair.lost.category else '—' }}</td>
+              <td>{{ pair.score }}%</td>
+              <td>
+                {% if not pair.is_validated %}
+                  <form method="post" action="{{ url_for('main.confirm_match') }}" style="display:inline-block;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="lost_id" value="{{ pair.lost.id }}">
+                    <input type="hidden" name="found_id" value="{{ pair.found.id }}">
+                    <button type="submit" class="btn btn-sm btn-success">Valider</button>
+                    <a href="{{ url_for('main.list_matches') }}" class="btn btn-sm btn-secondary">Ignorer</a>
+                  </form>
+                {% else %}
+                  <span class="text-muted">Correspondance déjà validée</span>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}

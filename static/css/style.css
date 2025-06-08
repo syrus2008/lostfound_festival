@@ -12,6 +12,15 @@ body {
     letter-spacing: 0.5px;
 }
 
+.superposed-card {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.09) !important;
+  transition: box-shadow 0.2s;
+}
+.superposed-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.20) !important;
+  z-index: 20;
+}
+
 .navbar .nav-link {
     border-radius: 20px;
     transition: background 0.2s, color 0.2s;

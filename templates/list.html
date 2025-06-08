@@ -42,7 +42,11 @@
                     {% endif %}
                     <div class="card-body d-flex flex-column">
                       <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title fw-bold"><i class="bi bi-box-seam text-primary"></i> {{ obj.title }}</h5>
+                        <h5 class="card-title fw-bold"><i class="bi bi-box-seam text-primary"></i> {{ obj.title }}
+                          {% if obj.has_match %}
+                            <span class="badge bg-success ms-2">✔ Match validé</span>
+                          {% endif %}
+                        </h5>
                         <div class="dropdown">
                           <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
                             <i class="bi bi-three-dots-vertical"></i>
@@ -123,13 +127,3 @@
 {% endif %}
 {% endblock %}
 
-<style>
-.superposed-card {
-  box-shadow: 0 4px 20px rgba(0,0,0,0.09) !important;
-  transition: box-shadow 0.2s;
-}
-.superposed-card:hover {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.20) !important;
-  z-index: 20;
-}
-</style>

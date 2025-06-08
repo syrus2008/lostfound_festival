@@ -18,15 +18,13 @@ class Status(enum.Enum):
 class Item(db.Model):
     __tablename__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
-    status = db.Column(db.Enum(Status), nullable=False, default=Status.LOST)
+    status = db.Column(db.Enum(Status), nullable=False, default=Status.LOST, index=True)
     title = db.Column(db.String(100), nullable=False)
     comments = db.Column(db.Text, nullable=True)
     location = db.Column(db.String(100), nullable=True)
     date_reported = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False, index=True)
     category = db.relationship('Category', backref=db.backref('items', lazy=True))
-    matched_with_id = db.Column(db.Integer, db.ForeignKey('items.id'), nullable=True)
-    matched_with = db.relationship('Item', remote_side='Item.id', uselist=False)
     reporter_name = db.Column(db.String(100), nullable=False)
     reporter_email = db.Column(db.String(150), nullable=False)
     reporter_phone = db.Column(db.String(50), nullable=True)
@@ -40,6 +38,20 @@ class Item(db.Model):
 
     def __repr__(self):
         return f'<Item {self.id} {self.title} ({self.status.value})>'
+
+
+class Match(db.Model):
+    __tablename__ = 'matches'
+    id = db.Column(db.Integer, primary_key=True)
+    lost_id = db.Column(db.Integer, db.ForeignKey('items.id', ondelete='CASCADE'), nullable=False, index=True)
+    found_id = db.Column(db.Integer, db.ForeignKey('items.id', ondelete='CASCADE'), nullable=False, index=True)
+    date_validated = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    lost = db.relationship('Item', foreign_keys=[lost_id])
+    found = db.relationship('Item', foreign_keys=[found_id])
+
+    def __repr__(self):
+        return f'<Match Lost:{self.lost_id} Found:{self.found_id}>'
 
 class ItemPhoto(db.Model):
     __tablename__ = 'item_photos'
