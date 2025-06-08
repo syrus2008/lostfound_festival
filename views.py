@@ -139,19 +139,25 @@ def list_items(status):
     # Construction des groupes pour affichage superposé
     seen = set()
     grouped_items = []
+    # Nouvelle logique de groupement basée sur la table Match
+    # On récupère tous les matchs impliquant les items de la page
+    matches = Match.query.filter(
+        (Match.lost_id.in_([item.id for item in items])) | (Match.found_id.in_([item.id for item in items]))
+    ).all()
+    match_map = {}
+    for m in matches:
+        match_map[m.lost_id] = m.found_id
+        match_map[m.found_id] = m.lost_id
+
     for item in items:
         if item.id in seen:
             continue
-        if item.matched_with_id:
-            # Cherche l’autre objet lié (présent ou non dans la page)
-            other = next((i for i in items if i.id == item.matched_with_id), None)
-            if other:
-                grouped_items.append([item, other])
-                seen.add(item.id)
-                seen.add(other.id)
-            else:
-                grouped_items.append([item])
-                seen.add(item.id)
+        match_id = match_map.get(item.id)
+        if match_id and match_id in [i.id for i in items]:
+            other = next(i for i in items if i.id == match_id)
+            grouped_items.append([item, other])
+            seen.add(item.id)
+            seen.add(other.id)
         else:
             grouped_items.append([item])
             seen.add(item.id)
