@@ -173,8 +173,8 @@ def list_items(status):
     for m in matches:
         matched_ids.add(m.lost_id)
         matched_ids.add(m.found_id)
-    for item in all_items:
-        item.has_match = item.id in matched_ids
+    # Mapping id → has_match pour usage fiable dans le template
+    matches_map = {item.id: (item.id in matched_ids) for item in all_items}
 
     return render_template(
         'list.html',
@@ -184,7 +184,8 @@ def list_items(status):
         status=st.value,
         categories=categories,
         selected_category=cat_filter,
-        search_query=q
+        search_query=q,
+        matches_map=matches_map
     )
 
 @bp.route('/item/<int:item_id>', methods=['GET', 'POST'])
