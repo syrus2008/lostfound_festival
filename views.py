@@ -214,16 +214,20 @@ def detail_item(item_id):
             match_form.match_with.choices = choices
 
     # POST : correspondance prioritaire
+    from models import Match
     if match_form and match_form.validate_on_submit() and 'submit_match' in request.form:
         other_id = match_form.match_with.data
         if other_id and other_id != 0:
             other = Item.query.get_or_404(other_id)
 
-            # Lier explicitement les deux objets (liaison bidirectionnelle)
-            item.matched_with_id = other.id
-            other.matched_with_id = item.id
-            db.session.commit()
-            flash(f"Objets #{item.id} et #{other.id} liés par correspondance.", "success")
+            # Créer un match validé
+            if not Match.query.filter_by(lost_id=min(item.id, other.id), found_id=max(item.id, other.id)).first():
+                new_match = Match(lost_id=min(item.id, other.id), found_id=max(item.id, other.id))
+                db.session.add(new_match)
+                db.session.commit()
+                flash(f"Objets #{item.id} et #{other.id} liés par correspondance.", "success")
+            else:
+                flash("Cette correspondance existe déjà.", "info")
             return redirect(url_for('main.detail_item', item_id=item.id))
         else:
             flash("Veuillez sélectionner un objet valide pour la correspondance.", "warning")
@@ -246,8 +250,11 @@ def detail_item(item_id):
                     db.session.add(photo)
         db.session.commit()
         # Synchronisation automatique : si l’objet est lié, on marque aussi l’autre comme rendu
-        if item.matched_with_id:
-            other = Item.query.get(item.matched_with_id)
+        from models import Match
+        match = Match.query.filter((Match.lost_id==item.id)|(Match.found_id==item.id)).first()
+        if match:
+            other_id = match.found_id if match.lost_id == item.id else match.lost_id
+            other = Item.query.get(other_id)
             if other and other.status != Status.RETURNED:
                 other.status = Status.RETURNED
                 other.claimant_name = item.claimant_name
@@ -261,6 +268,9 @@ def detail_item(item_id):
 
     from forms import DeleteForm
     delete_form = DeleteForm()
+    # Calcul du statut de match pour affichage badge
+    from models import Match
+    has_match = Match.query.filter((Match.lost_id==item.id)|(Match.found_id==item.id)).first() is not None
     return render_template(
         'detail.html',
         item=item,
@@ -268,7 +278,8 @@ def detail_item(item_id):
         can_claim=True,
         Status=Status,
         match_form=match_form,
-        delete_form=delete_form
+        delete_form=delete_form,
+        has_match=has_match
     )
 
 @bp.route('/item/<int:item_id>/edit', methods=['GET', 'POST'])
