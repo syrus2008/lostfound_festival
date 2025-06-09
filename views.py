@@ -391,10 +391,12 @@ def list_matches():
     pairs = get_all_candidate_pairs(seuil=seuil)
     pairs = sorted(pairs, key=lambda x: x[2], reverse=True)
 
-    # Ajout d'un booléen is_validated pour chaque paire
+    # Ajout d'un booléen is_validated pour chaque paire (via la table Match)
+    from models import Match
     pairs_with_status = []
     for lost, found, score in pairs:
-        is_validated = (lost.matched_with_id == found.id) or (found.matched_with_id == lost.id)
+        is_validated = Match.query.filter_by(lost_id=lost.id, found_id=found.id).first() is not None or \
+                      Match.query.filter_by(lost_id=found.id, found_id=lost.id).first() is not None
         pairs_with_status.append({
             'lost': lost,
             'found': found,
@@ -403,6 +405,7 @@ def list_matches():
         })
 
     return render_template('matches.html', pairs=pairs_with_status, threshold=seuil)
+
 
 @bp.route('/matches/confirm', methods=['POST'])
 def confirm_match():
