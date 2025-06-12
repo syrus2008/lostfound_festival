@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, SelectField, FileField, SubmitField
-from wtforms.validators import DataRequired, Length, Email
+from wtforms.validators import DataRequired, Length, Email, Optional
 from flask_wtf.file import FileAllowed
 from wtforms import MultipleFileField
 
@@ -10,7 +10,7 @@ class ItemForm(FlaskForm):
     location = StringField('Lieu (ex. “Entrée Nord”)', validators=[Length(max=100)])
     category = SelectField('Catégorie', coerce=int, validators=[DataRequired()])
     reporter_name = StringField('Nom du déclarant', validators=[DataRequired(), Length(max=100)])
-    reporter_email = StringField('Email du déclarant', validators=[Email(), Length(max=150)])
+    reporter_email = StringField('Email du déclarant', validators=[Optional(), Email(), Length(max=150)])
     reporter_phone = StringField('Téléphone du déclarant', validators=[Length(max=50)])
     photos = MultipleFileField('Photos de l’objet (jpg/png)', validators=[FileAllowed(['jpg','jpeg','png'])])
     submit = SubmitField('Valider')
