@@ -69,9 +69,9 @@ def report_item():
         db.session.add(item)
         db.session.flush()  # On s'assure que item.id est disponible
         if lost_form.photos.data:
-            from models import ItemPhoto
+            from werkzeug.datastructures import FileStorage
             for f in lost_form.photos.data:
-                if f and allowed_file(f.filename):
+                if isinstance(f, FileStorage) and f and allowed_file(f.filename):
                     filename = secure_filename(f.filename)
                     chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                     f.save(chemin)
@@ -241,8 +241,9 @@ def detail_item(item_id):
         item.claimant_phone = form.claimant_phone.data
         item.return_date = datetime.utcnow()
         if form.photos.data:
+            from werkzeug.datastructures import FileStorage
             for f in form.photos.data:
-                if f and allowed_file(f.filename):
+                if isinstance(f, FileStorage) and f and allowed_file(f.filename):
                     filename = secure_filename(f.filename)
                     chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                     f.save(chemin)
