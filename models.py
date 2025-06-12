@@ -26,7 +26,7 @@ class Item(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id'), nullable=False, index=True)
     category = db.relationship('Category', backref=db.backref('items', lazy=True))
     reporter_name = db.Column(db.String(100), nullable=False)
-    reporter_email = db.Column(db.String(150), nullable=False)
+    reporter_email = db.Column(db.String(150), nullable=True)
     reporter_phone = db.Column(db.String(50), nullable=True)
     photo_filename = db.Column(db.String(200), nullable=True)  # Pour compatibilité
     claimant_name = db.Column(db.String(100), nullable=True)
