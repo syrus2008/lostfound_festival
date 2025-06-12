@@ -70,6 +70,7 @@ def report_item():
         db.session.flush()  # On s'assure que item.id est disponible
         if lost_form.photos.data:
             from werkzeug.datastructures import FileStorage
+            from models import ItemPhoto
             for f in lost_form.photos.data:
                 if isinstance(f, FileStorage) and f and allowed_file(f.filename):
                     filename = secure_filename(f.filename)
