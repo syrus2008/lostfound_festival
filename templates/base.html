@@ -20,19 +20,19 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="/report">Signaler un objet</a></li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-              Listes
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="{{ url_for('main.list_items', status='lost') }}">Objets perdus</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('main.list_items', status='found') }}">Objets trouvés</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('main.list_items', status='returned') }}">Objets rendus</a></li>
-            </ul>
-          </li>
-          <li class="nav-item"><a class="nav-link" href="{{ url_for('main.list_matches') }}">Correspondances</a></li>
           {% if current_user.is_authenticated %}
+            <li class="nav-item"><a class="nav-link" href="/report">Signaler un objet</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                Listes
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('main.list_items', status='lost') }}">Objets perdus</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.list_items', status='found') }}">Objets trouvés</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.list_items', status='returned') }}">Objets rendus</a></li>
+              </ul>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.list_matches') }}">Correspondances</a></li>
             {% if current_user.is_admin %}
               <li class="nav-item"><a class="nav-link text-danger fw-bold" href="{{ url_for('admin.admin_dashboard') }}">Admin</a></li>
             {% endif %}
@@ -43,8 +43,7 @@
             <li class="nav-item"><span class="nav-link">{{ current_user.email }}</span></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.logout') }}">Déconnexion</a></li>
           {% else %}
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.login') }}">Connexion</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.register') }}">Créer un compte</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.auth') }}">Authentification</a></li>
           {% endif %}
         </ul>
           <li class="nav-item dropdown">

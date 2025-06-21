@@ -34,55 +34,51 @@ def find_similar_items(titre, category_id, seuil=70):
 
 @bp.route('/')
 def index():
+    if not current_user.is_authenticated:
+        return redirect(url_for('main.auth'))
     latest_found_items = Item.query.filter_by(status=Status.FOUND).order_by(Item.date_reported.desc()).limit(10).all()
     return render_template('index.html', latest_found_items=latest_found_items)
 
-@bp.route('/login', methods=['GET', 'POST'])
-def login():
+@bp.route('/auth', methods=['GET', 'POST'])
+def auth():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data.lower()).first()
-        if user and user.check_password(form.password.data):
-            login_user(user, remember=form.remember.data)
-            log_action(user.id, 'login', 'Connexion utilisateur')
-            flash('Connexion réussie.', 'success')
-            return redirect(url_for('main.index'))
-        flash('Identifiants invalides.', 'danger')
-    return render_template('login.html', form=form)
-
-@bp.route('/logout')
-@login_required
-def logout():
-    log_action(current_user.id, 'logout', 'Déconnexion utilisateur')
-    logout_user()
-    flash('Déconnexion réussie.', 'info')
-    return redirect(url_for('main.index'))
-
-@bp.route('/register', methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('main.index'))
-    form = RegisterForm()
-    if form.validate_on_submit():
-        if User.query.filter_by(email=form.email.data.lower()).first():
-            flash('Cet email existe déjà.', 'danger')
-            return render_template('register.html', form=form)
-        user = User(email=form.email.data.lower())
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        log_action(user.id, 'register', 'Inscription utilisateur')
-        flash('Compte créé. Connectez-vous.', 'success')
-        return redirect(url_for('main.login'))
-    return render_template('register.html', form=form)
+    login_form = LoginForm()
+    register_form = RegisterForm()
+    active_tab = request.args.get('tab', 'login')
+    # Gestion connexion
+    if request.method == 'POST':
+        if 'email' in request.form and 'password' in request.form and 'remember' in request.form:
+            active_tab = 'login'
+            if login_form.validate_on_submit():
+                user = User.query.filter_by(email=login_form.email.data.lower()).first()
+                if user and user.check_password(login_form.password.data):
+                    login_user(user, remember=login_form.remember.data)
+                    log_action(user.id, 'login', 'Connexion utilisateur')
+                    flash('Connexion réussie.', 'success')
+                    return redirect(url_for('main.index'))
+                flash('Identifiants invalides.', 'danger')
+        elif 'email' in request.form and 'password' in request.form and 'password2' in request.form:
+            active_tab = 'register'
+            if register_form.validate_on_submit():
+                if User.query.filter_by(email=register_form.email.data.lower()).first():
+                    flash('Cet email existe déjà.', 'danger')
+                else:
+                    user = User(email=register_form.email.data.lower())
+                    user.set_password(register_form.password.data)
+                    db.session.add(user)
+                    db.session.commit()
+                    log_action(user.id, 'register', 'Inscription utilisateur')
+                    flash('Compte créé. Connectez-vous.', 'success')
+                    return redirect(url_for('main.auth', tab='login'))
+    return render_template('auth.html', login_form=login_form, register_form=register_form, active_tab=active_tab)
 
 # Journalisation d'action
 def log_action(user_id, action_type, details=None):
     log = ActionLog(user_id=user_id, action_type=action_type, details=details)
     db.session.add(log)
     db.session.commit()
+
 
 @bp.route('/lost/new')
 def redirect_lost():
@@ -168,6 +164,7 @@ def report_item():
 
 
 @bp.route('/items/<status>')
+@login_required
 def list_items(status):
     from models import Match
     try:
@@ -242,6 +239,7 @@ def list_items(status):
     )
 
 @bp.route('/item/<int:item_id>', methods=['GET', 'POST'])
+@login_required
 def detail_item(item_id):
     item = Item.query.get_or_404(item_id)
     form = ClaimForm()
@@ -405,6 +403,7 @@ def delete_item(item_id):
     return redirect(url_for('main.index'))
 
 @bp.route('/export/<status>')
+@login_required
 def export_items(status):
     try:
         st = Status(status)
@@ -453,6 +452,7 @@ def get_all_candidate_pairs(seuil=60):
     return pairs
 
 @bp.route('/matches')
+@login_required
 def list_matches():
     try:
         seuil = int(request.args.get('threshold', 60))

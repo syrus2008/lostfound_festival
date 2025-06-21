@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5" style="max-width: 500px;">
+  <ul class="nav nav-tabs mb-4" id="authTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="login-tab" data-bs-toggle="tab" data-bs-target="#login" type="button" role="tab" aria-controls="login" aria-selected="true">Connexion</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register" type="button" role="tab" aria-controls="register" aria-selected="false">Créer un compte</button>
+    </li>
+  </ul>
+  <div class="tab-content" id="authTabsContent">
+    <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+      <form method="POST" action="{{ url_for('main.auth') }}?tab=login">
+        {{ login_form.hidden_tag() }}
+        <div class="mb-3">
+          {{ login_form.email.label(class="form-label") }}
+          {{ login_form.email(class="form-control") }}
+        </div>
+        <div class="mb-3">
+          {{ login_form.password.label(class="form-label") }}
+          {{ login_form.password(class="form-control") }}
+        </div>
+        <div class="mb-3 form-check">
+          {{ login_form.remember(class="form-check-input") }}
+          {{ login_form.remember.label(class="form-check-label") }}
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Connexion</button>
+      </form>
+    </div>
+    <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+      <form method="POST" action="{{ url_for('main.auth') }}?tab=register">
+        {{ register_form.hidden_tag() }}
+        <div class="mb-3">
+          {{ register_form.email.label(class="form-label") }}
+          {{ register_form.email(class="form-control") }}
+        </div>
+        <div class="mb-3">
+          {{ register_form.password.label(class="form-label") }}
+          {{ register_form.password(class="form-control") }}
+        </div>
+        <div class="mb-3">
+          {{ register_form.password2.label(class="form-label") }}
+          {{ register_form.password2(class="form-control") }}
+        </div>
+        <button type="submit" class="btn btn-success w-100">Créer le compte</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  // Active tab persistence based on query param
+  document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if(tab === 'register') {
+      const registerTab = document.getElementById('register-tab');
+      new bootstrap.Tab(registerTab).show();
+    } else {
+      const loginTab = document.getElementById('login-tab');
+      new bootstrap.Tab(loginTab).show();
+    }
+  });
+</script>
+{% endblock %}
