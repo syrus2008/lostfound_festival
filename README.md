@@ -59,11 +59,61 @@ Application Flask pour gérer les objets perdus, trouvés et rendus lors d'un fe
 
 ## Fonctionnalités
 
+- **Authentification sécurisée** :
+  - Connexion/inscription sur une page unique (`auth.html`).
+  - Un seul administrateur peut être créé via l'interface (admin unique).
+  - Protection CSRF sur tous les formulaires (pas de doublon d'id, gestion manuelle si besoin).
+  - Les sessions sont gérées avec Flask-Login.
+- **Gestion des droits** :
+  - Tous les utilisateurs connectés peuvent consulter et signaler des objets.
+  - Seuls les admins peuvent modifier ou supprimer des objets (contrôlé côté backend et UI).
+  - Le bouton "Admin" dans la navbar n'apparaît que pour les admins.
 - **Signalement Lost/Found** : formulaires avec upload photo, catégorie, description, coordonnées.
 - **Matching interne** : détection de titres similaires avant validation (Ajax + RapidFuzz).
-- **Listing en cartes** : interface responsives avec Bootstrap, pagination.
+- **Listing en cartes** : interface responsive avec Bootstrap, pagination.
 - **Détail & Réclamation** : passer un objet au statut “returned” via formulaire.
-- **Modification & Suppression** : éditer les informations ou supprimer l'objet.
+- **Modification & Suppression** : édition/suppression réservées à l'admin.
 - **Export HTML** : télécharger un fichier `.html` brut contenant toutes les informations hors ligne.
+
+## Structure actuelle
+
+- **app.py** : point d'entrée Flask, config globale.
+- **models.py** : modèles SQLAlchemy (User, Item, Category...).
+- **forms.py** : WTForms (connexion, inscription, signalement, etc.).
+- **views.py** : routes Flask, logique d'authentification, droits, listing, etc.
+- **templates/** :
+  - `base.html` (layout général, navbar conditionnelle selon le rôle)
+  - `auth.html` (connexion/inscription)
+  - `list.html` (listing objets, pagination)
+  - `detail.html`, `report.html`, etc.
+- **static/** : CSS, JS, uploads.
+- **categories_seed.py** : script d'initialisation des catégories.
+
+## Sécurité & Bonnes pratiques
+
+- Authentification par email/mot de passe, hash sécurisé.
+- Vérification stricte des droits admin sur toutes les routes sensibles.
+- Protection CSRF sur tous les formulaires.
+- Affichage des erreurs de validation et des messages flash.
+- UI en français.
+
+## Correction des bugs récents
+
+- Correction du bug de connexion (détection fiable du formulaire via `name` sur les boutons submit).
+- Correction du warning CSRF (id unique par formulaire).
+- Correction des erreurs de template Jinja2 (structure des boucles, suppression du code mort).
+- Vérification complète de la logique d'authentification et de droits.
+
+## Comportement attendu (admin vs utilisateur)
+
+- **Admin :** accès à l'interface admin, modification/suppression d'objets, bouton "Admin" visible.
+- **Utilisateur normal :** accès à la liste, au détail, au signalement, mais pas d'édition/suppression ni d'accès admin.
+
+## Dépannage
+
+- **Erreur CSRF ou "duplicate id"** : vider le cache, vérifier le HTML généré, chaque input CSRF a un id unique (`login_csrf_token`, `register_csrf_token`).
+- **Erreur Jinja2 (endfor/endblock)** : vérifier la structure du template, ne laisser qu'une seule boucle principale.
+- **Problème de droits** : vérifier le rôle de l'utilisateur et la présence du bouton "Admin".
+- **Connexion ne fonctionne pas** : s'assurer que les boutons submit ont bien un attribut `name` et que la vue Flask détecte le bon formulaire.
 
 ---
