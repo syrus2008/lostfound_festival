@@ -56,7 +56,7 @@ def auth():
                     login_user(user, remember=login_form.remember.data)
                     log_action(user.id, 'login', 'Connexion utilisateur')
                     flash('Connexion réussie.', 'success')
-                    return redirect(url_for('main.index'))
+                    return redirect(url_for('main.list_items', status='found'))
                 flash('Identifiants invalides.', 'danger')
         elif 'email' in request.form and 'password' in request.form and 'password2' in request.form:
             active_tab = 'register'
