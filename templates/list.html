@@ -32,32 +32,11 @@
               <p class="card-text mb-1"><i class="bi bi-tag"></i> {{ obj.category.name if obj.category else '—' }}</p>
               <p class="card-text"><i class="bi bi-calendar-event"></i> {{ obj.date_reported.strftime('%d/%m/%Y') }}</p>
               <a href="{{ url_for('main.detail_item', item_id=obj.id) }}" class="btn btn-outline-primary btn-sm">Voir détail</a>
-                      <span class="badge bg-secondary">ID #{{ obj.id }}</span>
-                    </div>
-                  </div>
-                </a>
-              {% endfor %}
+              <span class="badge bg-secondary">ID #{{ obj.id }}</span>
             </div>
-          {% else %}
-            <div class="card h-100 position-relative shadow-sm border-0 rounded-4 card-hover-effect">
-              <a href="{{ url_for('main.detail_item', item_id=group[0].id) }}" class="text-decoration-none">
-                {% if group[0].photos and group[0].photos|length > 0 %}
-                  <img src="{{ url_for('main.uploaded_file', filename=group[0].photos[0].filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
-                {% elif group[0].photo_filename %}
-                  <img src="{{ url_for('main.uploaded_file', filename=group[0].photo_filename) }}" class="card-img-top" style="object-fit: cover; height: 200px;" loading="lazy" alt="Photo">
-                {% else %}
-                  <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <span class="text-muted">Pas de photo</span>
-                  </div>
-                {% endif %}
-                <div class="card-body d-flex flex-column">
-                  <h5 class="card-title fw-bold mb-2"><i class="bi bi-box-seam text-primary"></i> {{ group[0].title }}</h5>
-                  <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-tag"></i> {{ group[0].category.name }}</small></p>
-                  <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-geo-alt"></i> {{ group[0].location or '—' }}</small></p>
-                  <p class="card-text mb-2"><small class="text-muted"><i class="bi bi-calendar-event"></i> {{ group[0].date_reported.strftime('%d/%m/%Y') }}</small></p>
-                  <span class="badge bg-secondary">ID #{{ group[0].id }}</span>
-                </div>
-              </a>
+          </div>
+        </div>
+      {% endfor %}              </a>
             </div>
           {% endif %}
         </div>
