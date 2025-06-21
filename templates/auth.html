@@ -26,6 +26,11 @@
           {{ login_form.remember.label(class="form-check-label") }}
         </div>
         <button type="submit" class="btn btn-primary w-100">Connexion</button>
+        {% for field, errors in login_form.errors.items() %}
+          {% for error in errors %}
+            <div class="alert alert-danger mt-2">{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
       </form>
     </div>
     <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
@@ -50,6 +55,11 @@
         </div>
         {% endif %}
         <button type="submit" class="btn btn-success w-100">Créer le compte</button>
+        {% for field, errors in register_form.errors.items() %}
+          {% for error in errors %}
+            <div class="alert alert-danger mt-2">{{ error }}</div>
+          {% endfor %}
+        {% endfor %}
       </form>
     </div>
   </div>
