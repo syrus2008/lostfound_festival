@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Utilisateurs</h2>
+<table class="table">
+  <thead>
+    <tr><th>ID</th><th>Email</th><th>Rôle</th><th>Actions</th></tr>
+  </thead>
+  <tbody>
+    {% for user in users %}
+    <tr>
+      <td>{{ user.id }}</td>
+      <td>{{ user.email }}</td>
+      <td>{{ 'Admin' if user.is_admin else 'Utilisateur' }}</td>
+      <td><!-- actions à venir --></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

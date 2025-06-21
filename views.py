@@ -10,7 +10,9 @@ from datetime import datetime
 
 from app import app, db
 from models import Item, Category, Status
-from forms import ItemForm, ClaimForm, ConfirmReturnForm, MatchForm
+from forms import ItemForm, ClaimForm, ConfirmReturnForm, MatchForm, LoginForm, RegisterForm
+from flask_login import login_user, logout_user, login_required, current_user
+from models import User, ActionLog
 
 bp = Blueprint('main', __name__)
 
@@ -35,6 +37,53 @@ def index():
     latest_found_items = Item.query.filter_by(status=Status.FOUND).order_by(Item.date_reported.desc()).limit(10).all()
     return render_template('index.html', latest_found_items=latest_found_items)
 
+@bp.route('/login', methods=['GET', 'POST'])
+def login():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data.lower()).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember.data)
+            log_action(user.id, 'login', 'Connexion utilisateur')
+            flash('Connexion réussie.', 'success')
+            return redirect(url_for('main.index'))
+        flash('Identifiants invalides.', 'danger')
+    return render_template('login.html', form=form)
+
+@bp.route('/logout')
+@login_required
+def logout():
+    log_action(current_user.id, 'logout', 'Déconnexion utilisateur')
+    logout_user()
+    flash('Déconnexion réussie.', 'info')
+    return redirect(url_for('main.index'))
+
+@bp.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.index'))
+    form = RegisterForm()
+    if form.validate_on_submit():
+        if User.query.filter_by(email=form.email.data.lower()).first():
+            flash('Cet email existe déjà.', 'danger')
+            return render_template('register.html', form=form)
+        user = User(email=form.email.data.lower())
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        log_action(user.id, 'register', 'Inscription utilisateur')
+        flash('Compte créé. Connectez-vous.', 'success')
+        return redirect(url_for('main.login'))
+    return render_template('register.html', form=form)
+
+# Journalisation d'action
+def log_action(user_id, action_type, details=None):
+    log = ActionLog(user_id=user_id, action_type=action_type, details=details)
+    db.session.add(log)
+    db.session.commit()
+
 @bp.route('/lost/new')
 def redirect_lost():
     return redirect(url_for('main.report_item'), code=301)
@@ -44,6 +93,7 @@ def redirect_found():
     return redirect(url_for('main.report_item'), code=301)
 
 @bp.route('/report', methods=['GET', 'POST'])
+@login_required
 def report_item():
     lost_form = ItemForm(prefix='lost')
     found_form = ItemForm(prefix='found')
@@ -79,6 +129,7 @@ def report_item():
                     photo = ItemPhoto(item_id=item.id, filename=filename)
                     db.session.add(photo)
         db.session.commit()  # Commit après ajout des photos
+        log_action(current_user.id, 'create_item', f'Ajout objet perdu ID:{item.id}')
         flash("Objet perdu enregistré !", "success")
         return redirect(url_for('main.list_items', status='lost'))
 
@@ -109,6 +160,7 @@ def report_item():
                     photo = ItemPhoto(item_id=item.id, filename=filename)
                     db.session.add(photo)
         db.session.commit()  # Commit après ajout des photos
+        log_action(current_user.id, 'create_item', f'Ajout objet trouvé ID:{item.id}')
         flash("Objet trouvé enregistré !", "success")
         return redirect(url_for('main.list_items', status='found'))
 
@@ -286,6 +338,7 @@ def detail_item(item_id):
     )
 
 @bp.route('/item/<int:item_id>/edit', methods=['GET', 'POST'])
+@login_required
 def edit_item(item_id):
     item = Item.query.get_or_404(item_id)
     form = ItemForm()
@@ -308,9 +361,11 @@ def edit_item(item_id):
         item.reporter_name = form.reporter_name.data
         item.reporter_email = form.reporter_email.data
         item.reporter_phone = form.reporter_phone.data
-        db.session.commit()  # Commit d'abord l'objet pour garantir item.id
+        db.session.commit()
+        # Ajout/modification des photos
+        from werkzeug.datastructures import FileStorage
+        from models import ItemPhoto
         if form.photos.data:
-            from models import ItemPhoto
             for f in form.photos.data:
                 if f and allowed_file(f.filename):
                     filename = secure_filename(f.filename)
@@ -319,28 +374,30 @@ def edit_item(item_id):
                     photo = ItemPhoto(item_id=item.id, filename=filename)
                     db.session.add(photo)
             db.session.commit()  # Commit ensuite les photos
+        log_action(current_user.id, 'edit_item', f'Modification objet ID:{item.id}')
         flash("Objet mis à jour !", "success")
         return redirect(url_for('main.detail_item', item_id=item.id))
 
     return render_template('edit_item.html', form=form, item=item)
 
 @bp.route('/item/<int:item_id>/delete', methods=['POST'])
+@login_required
 def delete_item(item_id):
     from forms import DeleteForm
     item = Item.query.get_or_404(item_id)
     delete_form = DeleteForm()
+    if not current_user.is_admin:
+        flash("Seul un administrateur peut supprimer un objet.", "danger")
+        return redirect(url_for('main.detail_item', item_id=item.id)), 403
     if not delete_form.validate_on_submit():
         for field, errors in delete_form.errors.items():
             for error in errors:
                 flash(error, 'danger')
         return redirect(url_for('main.detail_item', item_id=item.id)), 400
-    password = delete_form.delete_password.data
-    if password != '7120':
-        flash("Mot de passe incorrect : suppression annulée.", "danger")
-        return redirect(url_for('main.detail_item', item_id=item.id)), 400
     old_status = item.status.value if hasattr(item, 'status') else 'lost'
     db.session.delete(item)
     db.session.commit()
+    log_action(current_user.id, 'delete_item', f'Suppression objet ID:{item.id}')
     flash("Objet supprimé définitivement !", "danger")
     # Redirige vers la bonne liste selon l'ancien statut
     if old_status in ['lost', 'found', 'returned']:
@@ -422,6 +479,7 @@ def list_matches():
 
 
 @bp.route('/matches/confirm', methods=['POST'])
+@login_required
 def confirm_match():
     from models import Match
     try:
@@ -464,5 +522,6 @@ def confirm_match():
     found.return_comment = f"Corrélé avec Lost #{lost.id}"
 
     db.session.commit()
+    log_action(current_user.id, 'validate_match', f'Match Lost:{lost.id} Found:{found.id}')
     flash(f"Correspondance validée : Lost #{lost.id} ↔ Found #{found.id}", "success")
     return redirect(url_for('main.list_matches'))

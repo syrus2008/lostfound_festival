@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Administration</h2>
+<ul>
+  <li><a href="{{ url_for('admin.admin_users') }}">Gestion des utilisateurs</a></li>
+  <li><a href="{{ url_for('admin.admin_logs') }}">Logs d'actions</a></li>
+</ul>
+{% endblock %}

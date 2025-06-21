@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SelectField, FileField, SubmitField
-from wtforms.validators import DataRequired, Length, Email, Optional
+from wtforms import StringField, TextAreaField, SelectField, FileField, SubmitField, PasswordField, BooleanField
+from wtforms.validators import DataRequired, Length, Email, Optional, EqualTo
 from flask_wtf.file import FileAllowed
 from wtforms import MultipleFileField
 
@@ -37,3 +37,15 @@ class MatchForm(FlaskForm):
 class DeleteForm(FlaskForm):
     delete_password = StringField('Mot de passe', validators=[DataRequired()])
     submit = SubmitField('Supprimer définitivement')
+
+class LoginForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=150)])
+    password = PasswordField('Mot de passe', validators=[DataRequired()])
+    remember = BooleanField('Se souvenir de moi')
+    submit = SubmitField('Connexion')
+
+class RegisterForm(FlaskForm):
+    email = StringField('Email', validators=[DataRequired(), Email(), Length(max=150)])
+    password = PasswordField('Mot de passe', validators=[DataRequired(), Length(min=6)])
+    password2 = PasswordField('Confirmer le mot de passe', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Créer le compte')
