@@ -22,45 +22,16 @@
       <button type="submit" class="btn btn-outline-primary">Filtrer</button>
     </div>
   </form>
-   {% if grouped_items %}
+  {% if items %}
     <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-      {% for group in grouped_items %}
+      {% for obj in items %}
         <div class="col">
-          {% if group|length == 2 %}
-            <div class="position-relative" style="height: 420px;">
-              {% for obj in group %}
-                <a href="{{ url_for('main.detail_item', item_id=obj.id) }}" class="text-decoration-none">
-                  <div class="card h-100 position-absolute superposed-card" style="width:100%; top:0px; left:0px; z-index:1">
-                    <div class="position-relative">
-                      {% if matches_map[obj.id] %}
-                        <div class="position-absolute top-0 start-0 w-100" style="z-index:20;">
-                          <span class="badge bg-success w-100 rounded-0 py-2 fs-6" style="opacity:0.95;">
-                            ✔ Match validé
-                          </span>
-                        </div>
-                      {% endif %}
-                      {% if obj.photos and obj.photos|length > 0 %}
-                        <img src="{{ url_for('main.uploaded_file', filename=obj.photos[0].filename) }}" class="card-img-top" alt="Photo">
-                      {% elif obj.photo_filename %}
-                        <img src="{{ url_for('main.uploaded_file', filename=obj.photo_filename) }}" class="card-img-top" alt="Photo">
-                      {% else %}
-                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                          <span class="text-muted">Pas de photo</span>
-                        </div>
-                      {% endif %}
-                    </div>
-                    <div class="card-body d-flex flex-column">
-                      <div class="d-flex justify-content-between align-items-start mb-2">
-                        <h5 class="card-title fw-bold"><i class="bi bi-box-seam text-primary"></i> {{ obj.title }}
-                          {% if matches_map[obj.id] %}
-                            <span class="badge bg-success ms-2">✔ Match validé</span>
-                          {% endif %}
-                        </h5>
-                        
-                      </div>
-                      <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-tag"></i> {{ obj.category.name }}</small></p>
-                      <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-geo-alt"></i> {{ obj.location or '—' }}</small></p>
-                      <p class="card-text mb-2"><small class="text-muted"><i class="bi bi-calendar-event"></i> {{ obj.date_reported.strftime('%d/%m/%Y') }}</small></p>
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">{{ obj.title }}</h5>
+              <p class="card-text mb-1"><i class="bi bi-tag"></i> {{ obj.category.name if obj.category else '—' }}</p>
+              <p class="card-text"><i class="bi bi-calendar-event"></i> {{ obj.date_reported.strftime('%d/%m/%Y') }}</p>
+              <a href="{{ url_for('main.detail_item', item_id=obj.id) }}" class="btn btn-outline-primary btn-sm">Voir détail</a>
                       <span class="badge bg-secondary">ID #{{ obj.id }}</span>
                     </div>
                   </div>
