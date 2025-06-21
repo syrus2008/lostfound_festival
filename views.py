@@ -356,6 +356,9 @@ def detail_item(item_id):
 @bp.route('/item/<int:item_id>/edit', methods=['GET', 'POST'])
 @login_required
 def edit_item(item_id):
+    if not current_user.is_admin:
+        flash("Seul un administrateur peut modifier un objet.", "danger")
+        return redirect(url_for('main.detail_item', item_id=item_id)), 403
     item = Item.query.get_or_404(item_id)
     form = ItemForm()
     form.category.choices = [(c.id, c.name) for c in Category.query.order_by(Category.name).all()]

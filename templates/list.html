@@ -30,7 +30,7 @@
             <div class="position-relative" style="height: 420px;">
               {% for obj in group %}
                 <a href="{{ url_for('main.detail_item', item_id=obj.id) }}" class="text-decoration-none">
-                  <div class="card h-100 position-absolute superposed-card" style="width: 100%; top: {{ loop.index0 * 30 }}px; left: {{ loop.index0 * 30 }}px; z-index: {{ 10 - loop.index0 }}">
+                  <div class="card h-100 position-absolute superposed-card" style="width:100%; top:0px; left:0px; z-index:1">
                     <div class="position-relative">
                       {% if matches_map[obj.id] %}
                         <div class="position-absolute top-0 start-0 w-100" style="z-index:20;">
@@ -56,15 +56,7 @@
                             <span class="badge bg-success ms-2">✔ Match validé</span>
                           {% endif %}
                         </h5>
-                        <div class="dropdown">
-                          <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Actions">
-                            <i class="bi bi-three-dots-vertical"></i>
-                          </button>
-                          <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ url_for('main.edit_item', item_id=obj.id) }}"><i class="bi bi-pencil-square"></i> Modifier</a></li>
-                            <li><a class="dropdown-item text-danger" href="{{ url_for('main.detail_item', item_id=obj.id) }}#delete"><i class="bi bi-trash"></i> Supprimer</a></li>
-                          </ul>
-                        </div>
+                        
                       </div>
                       <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-tag"></i> {{ obj.category.name }}</small></p>
                       <p class="card-text mb-1"><small class="text-muted"><i class="bi bi-geo-alt"></i> {{ obj.location or '—' }}</small></p>
