@@ -46,6 +46,11 @@ def auth():
     login_form = LoginForm()
     register_form = RegisterForm()
     active_tab = request.args.get('tab', 'login')
+
+    # Vérifie s'il existe déjà un admin
+    admin_exists = User.query.filter_by(is_admin=True).first() is not None
+    show_admin_checkbox = not admin_exists
+
     # Gestion connexion
     if request.method == 'POST':
         if 'email' in request.form and 'password' in request.form and 'remember' in request.form:
@@ -66,12 +71,18 @@ def auth():
                 else:
                     user = User(email=register_form.email.data.lower())
                     user.set_password(register_form.password.data)
+                    # Gestion admin unique
+                    if show_admin_checkbox and register_form.is_admin.data:
+                        user.is_admin = True
+                    else:
+                        user.is_admin = False
                     db.session.add(user)
                     db.session.commit()
                     log_action(user.id, 'register', 'Inscription utilisateur')
                     flash('Compte créé. Connectez-vous.', 'success')
                     return redirect(url_for('main.auth', tab='login'))
-    return render_template('auth.html', login_form=login_form, register_form=register_form, active_tab=active_tab)
+    return render_template('auth.html', login_form=login_form, register_form=register_form, active_tab=active_tab, show_admin_checkbox=show_admin_checkbox)
+
 
 # Journalisation d'action
 def log_action(user_id, action_type, details=None):

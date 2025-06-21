@@ -48,4 +48,5 @@ class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=150)])
     password = PasswordField('Mot de passe', validators=[DataRequired(), Length(min=6)])
     password2 = PasswordField('Confirmer le mot de passe', validators=[DataRequired(), EqualTo('password')])
+    is_admin = BooleanField('Créer un compte administrateur')
     submit = SubmitField('Créer le compte')

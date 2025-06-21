@@ -12,14 +12,15 @@
   <div class="tab-content" id="authTabsContent">
     <div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
       <form method="POST" action="{{ url_for('main.auth') }}?tab=login">
-        {{ login_form.hidden_tag() }}
+        {{ login_form.csrf_token(id="login_csrf_token") }}
+        {{ login_form.hidden_tag()|replace('id="csrf_token"', 'id="login_csrf_token"') }}
         <div class="mb-3">
-          {{ login_form.email.label(class="form-label") }}
-          {{ login_form.email(class="form-control") }}
+          {{ login_form.email.label(class="form-label", for="login_email") }}
+          {{ login_form.email(class="form-control", id="login_email") }}
         </div>
         <div class="mb-3">
-          {{ login_form.password.label(class="form-label") }}
-          {{ login_form.password(class="form-control") }}
+          {{ login_form.password.label(class="form-label", for="login_password") }}
+          {{ login_form.password(class="form-control", id="login_password") }}
         </div>
         <div class="mb-3 form-check">
           {{ login_form.remember(class="form-check-input") }}
@@ -30,19 +31,26 @@
     </div>
     <div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
       <form method="POST" action="{{ url_for('main.auth') }}?tab=register">
-        {{ register_form.hidden_tag() }}
+        {{ register_form.csrf_token(id="register_csrf_token") }}
+        {{ register_form.hidden_tag()|replace('id="csrf_token"', 'id="register_csrf_token"') }}
         <div class="mb-3">
-          {{ register_form.email.label(class="form-label") }}
-          {{ register_form.email(class="form-control") }}
+          {{ register_form.email.label(class="form-label", for="register_email") }}
+          {{ register_form.email(class="form-control", id="register_email") }}
         </div>
         <div class="mb-3">
-          {{ register_form.password.label(class="form-label") }}
-          {{ register_form.password(class="form-control") }}
+          {{ register_form.password.label(class="form-label", for="register_password") }}
+          {{ register_form.password(class="form-control", id="register_password") }}
         </div>
         <div class="mb-3">
-          {{ register_form.password2.label(class="form-label") }}
-          {{ register_form.password2(class="form-control") }}
+          {{ register_form.password2.label(class="form-label", for="register_password2") }}
+          {{ register_form.password2(class="form-control", id="register_password2") }}
         </div>
+        {% if show_admin_checkbox %}
+        <div class="mb-3 form-check">
+          {{ register_form.is_admin(class="form-check-input") }}
+          {{ register_form.is_admin.label(class="form-check-label") }}
+        </div>
+        {% endif %}
         <button type="submit" class="btn btn-success w-100">Créer le compte</button>
       </form>
     </div>
