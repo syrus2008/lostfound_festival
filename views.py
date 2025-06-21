@@ -84,6 +84,13 @@ def auth():
     return render_template('auth.html', login_form=login_form, register_form=register_form, active_tab=active_tab, show_admin_checkbox=show_admin_checkbox)
 
 
+@bp.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash('Déconnexion réussie.', 'success')
+    return redirect(url_for('main.auth'))
+
 # Journalisation d'action
 def log_action(user_id, action_type, details=None):
     log = ActionLog(user_id=user_id, action_type=action_type, details=details)
