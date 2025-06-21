@@ -53,7 +53,7 @@ def auth():
 
     # Gestion connexion
     if request.method == 'POST':
-        if 'email' in request.form and 'password' in request.form and 'remember' in request.form:
+        if 'submit_login' in request.form:
             active_tab = 'login'
             if login_form.validate_on_submit():
                 user = User.query.filter_by(email=login_form.email.data.lower()).first()
@@ -63,7 +63,7 @@ def auth():
                     flash('Connexion réussie.', 'success')
                     return redirect(url_for('main.list_items', status='found'))
                 flash('Identifiants invalides.', 'danger')
-        elif 'email' in request.form and 'password' in request.form and 'password2' in request.form:
+        elif 'submit_register' in request.form:
             active_tab = 'register'
             if register_form.validate_on_submit():
                 if User.query.filter_by(email=register_form.email.data.lower()).first():

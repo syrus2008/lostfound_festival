@@ -25,7 +25,7 @@
           {{ login_form.remember(class="form-check-input") }}
           {{ login_form.remember.label(class="form-check-label") }}
         </div>
-        <button type="submit" class="btn btn-primary w-100">Connexion</button>
+        <button type="submit" class="btn btn-primary w-100" name="submit_login">Connexion</button>
         {% for field, errors in login_form.errors.items() %}
           {% for error in errors %}
             <div class="alert alert-danger mt-2">{{ error }}</div>
@@ -54,7 +54,7 @@
           {{ register_form.is_admin.label(class="form-check-label") }}
         </div>
         {% endif %}
-        <button type="submit" class="btn btn-success w-100">Créer le compte</button>
+        <button type="submit" class="btn btn-success w-100" name="submit_register">Créer le compte</button>
         {% for field, errors in register_form.errors.items() %}
           {% for error in errors %}
             <div class="alert alert-danger mt-2">{{ error }}</div>
