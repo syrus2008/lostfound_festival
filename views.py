@@ -69,16 +69,19 @@ def auth():
                 if User.query.filter_by(email=register_form.email.data.lower()).first():
                     flash('Cet email existe déjà.', 'danger')
                 else:
-                    user = User(email=register_form.email.data.lower())
+                    user = User(
+                        first_name=register_form.first_name.data.strip(),
+                        last_name=register_form.last_name.data.strip(),
+                        email=register_form.email.data.lower()
+                    )
                     user.set_password(register_form.password.data)
-                    # Gestion admin unique
-                    if show_admin_checkbox and register_form.is_admin.data:
+                    if register_form.is_admin.data and show_admin_checkbox:
                         user.is_admin = True
                     else:
                         user.is_admin = False
                     db.session.add(user)
                     db.session.commit()
-                    log_action(user.id, 'register', 'Inscription utilisateur')
+                    log_action(user.id, 'register', f"Inscription utilisateur : {user.first_name} {user.last_name}")
                     flash('Compte créé. Connectez-vous.', 'success')
                     return redirect(url_for('main.auth', tab='login'))
     return render_template('auth.html', login_form=login_form, register_form=register_form, active_tab=active_tab, show_admin_checkbox=show_admin_checkbox)

@@ -48,6 +48,8 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Connexion')
 
 class RegisterForm(FlaskForm):
+    first_name = StringField('Prénom', validators=[DataRequired(), Length(max=100)])
+    last_name = StringField('Nom', validators=[DataRequired(), Length(max=100)])
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=150)])
     password = PasswordField('Mot de passe', validators=[DataRequired(), Length(min=6)])
     password2 = PasswordField('Confirmer le mot de passe', validators=[DataRequired(), EqualTo('password')])
