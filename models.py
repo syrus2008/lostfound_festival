@@ -16,11 +16,13 @@ class Status(enum.Enum):
     LOST = 'lost'
     FOUND = 'found'
     RETURNED = 'returned'
+    PENDING_DELETION = 'pending_deletion'  # En attente de suppression
 
 class Item(db.Model):
     __tablename__ = 'items'
     id = db.Column(db.Integer, primary_key=True)
     status = db.Column(db.Enum(Status), nullable=False, default=Status.LOST, index=True)
+    previous_status = db.Column(db.Enum(Status), nullable=True)  # Statut original avant demande suppression
     title = db.Column(db.String(100), nullable=False)
     comments = db.Column(db.Text, nullable=True)
     location = db.Column(db.String(100), nullable=True)

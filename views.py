@@ -402,26 +402,34 @@ def edit_item(item_id):
 @bp.route('/item/<int:item_id>/delete', methods=['POST'])
 @login_required
 def delete_item(item_id):
-    from forms import DeleteForm
     item = Item.query.get_or_404(item_id)
     delete_form = DeleteForm()
+    # Si non-admin : demande de suppression
     if not current_user.is_admin:
-        flash("Seul un administrateur peut supprimer un objet.", "danger")
-        return redirect(url_for('main.detail_item', item_id=item.id)), 403
-    if not delete_form.validate_on_submit():
-        for field, errors in delete_form.errors.items():
-            for error in errors:
-                flash(error, 'danger')
-        return redirect(url_for('main.detail_item', item_id=item.id)), 400
-    old_status = item.status.value if hasattr(item, 'status') else 'lost'
-    db.session.delete(item)
-    db.session.commit()
-    log_action(current_user.id, 'delete_item', f'Suppression objet ID:{item.id}')
-    flash("Objet supprimé définitivement !", "danger")
-    # Redirige vers la bonne liste selon l'ancien statut
-    if old_status in ['lost', 'found', 'returned']:
-        return redirect(url_for('main.list_items', status=old_status))
-    return redirect(url_for('main.index'))
+        # Stocke le statut original si ce n'est pas déjà fait
+        if not item.previous_status:
+            item.previous_status = item.status
+        item.status = Status.PENDING_DELETION
+        db.session.commit()
+        log_action(current_user.id, 'request_deletion', f'Demande suppression objet: {item.id}')
+        flash("Votre demande de suppression a été transmise à l'administrateur.", "info")
+        return redirect(url_for('main.detail_item', item_id=item.id))
+    # Admin : suppression définitive
+    if delete_form.validate_on_submit():
+        if not current_user.check_password(delete_form.delete_password.data):
+            delete_form.delete_password.errors.append("Mot de passe incorrect.")
+            return redirect(url_for('main.detail_item', item_id=item_id))
+        db.session.delete(item)
+        db.session.commit()
+        log_action(current_user.id, 'delete_item', f'Item supprimé: {item.id}')
+        flash('Objet supprimé.', 'success')
+        # Redirige vers la bonne liste selon l'ancien statut
+        old_status = item.status.value if hasattr(item, 'status') else 'lost'
+        if old_status in ['lost', 'found', 'returned']:
+            return redirect(url_for('main.list_items', status=old_status))
+        return redirect(url_for('main.index'))
+    flash('Erreur lors de la suppression.', 'danger')
+    return redirect(url_for('main.detail_item', item_id=item_id))
 
 @bp.route('/export/<status>')
 @login_required
@@ -431,13 +439,14 @@ def export_items(status):
     except ValueError:
         st = Status.LOST
 
-    items = Item.query.filter_by(status=st).order_by(Item.date_reported.desc()).all()
+    items = Item.query.filter_by(status=st).filter(Item.status != Status.PENDING_DELETION).order_by(Item.date_reported.desc()).all()
     html = render_template('export_template.html', items=items, status=st.value)
     response = make_response(html)
     response.headers['Content-Type'] = 'text/html; charset=utf-8'
     response.headers['Content-Disposition'] = f'attachment; filename=export_{st.value}.html'
     return response
 
+{{ ... }}
 @bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)

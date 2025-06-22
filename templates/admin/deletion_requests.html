@@ -1,0 +1,37 @@
+{% extends "admin/dashboard.html" %}
+{% block content %}
+<h2>Demandes de suppression d'objets</h2>
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Titre</th>
+      <th>Catégorie</th>
+      <th>Déclarant</th>
+      <th>Date</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+    <tr>
+      <td>{{ item.id }}</td>
+      <td><a href="{{ url_for('main.detail_item', item_id=item.id) }}">{{ item.title }}</a></td>
+      <td>{{ item.category.name if item.category else '—' }}</td>
+      <td>{{ item.reporter_name }}</td>
+      <td>{{ item.date_reported.strftime('%d/%m/%Y %H:%M') }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin.confirm_deletion', item_id=item.id) }}" style="display:inline;">
+          <button type="submit" class="btn btn-danger btn-sm">Confirmer suppression</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.reject_deletion', item_id=item.id) }}" style="display:inline;">
+          <button type="submit" class="btn btn-secondary btn-sm">Rejeter</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" class="text-center">Aucune demande en attente</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

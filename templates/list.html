@@ -26,21 +26,22 @@
   <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
     {% for group in grouped_items %}
       <div class="col position-relative" style="min-height: 240px;">
-        {% if group|length == 2 %}
+        {% set visible_group = group | selectattr('status', 'ne', Status.PENDING_DELETION) | list %}
+        {% if visible_group|length == 2 %}
           <div class="position-absolute w-100 h-100" style="z-index: 2; top: 0; left: 0; pointer-events: none;">
             <span class="badge bg-success position-absolute top-0 end-0 m-2 shadow">Matché</span>
           </div>
           <div style="position: absolute; top: 12px; left: 12px; width: 92%; opacity: 0.85; z-index: 1; transform: rotate(-2deg);">
-            {% set obj = group[1] %}
+            {% set obj = visible_group[1] %}
             {% include 'list_card.html' %}
           </div>
           <div style="position: relative; z-index: 2;">
-            {% set obj = group[0] %}
+            {% set obj = visible_group[0] %}
             {% include 'list_card.html' %}
           </div>
-        {% else %}
+        {% elif visible_group|length == 1 %}
           <div style="position: relative;">
-            {% set obj = group[0] %}
+            {% set obj = visible_group[0] %}
             {% include 'list_card.html' %}
           </div>
         {% endif %}
