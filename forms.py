@@ -4,6 +4,9 @@ from wtforms.validators import DataRequired, Length, Email, Optional, EqualTo
 from flask_wtf.file import FileAllowed
 from wtforms import MultipleFileField
 
+class SimpleCsrfForm(FlaskForm):
+    pass
+
 class ItemForm(FlaskForm):
     title = StringField('Titre', validators=[DataRequired(), Length(max=100)])
     comments = TextAreaField('Description / Commentaires', validators=[Length(max=500)])

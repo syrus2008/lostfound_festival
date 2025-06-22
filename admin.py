@@ -21,12 +21,15 @@ bp_admin = Blueprint('admin', __name__, url_prefix='/admin')
 def admin_dashboard():
     return render_template('admin/dashboard.html')
 
+from forms import SimpleCsrfForm
+
 @bp_admin.route('/deletion-requests')
 @login_required
 @admin_required
 def deletion_requests():
     items = Item.query.filter_by(status=Status.PENDING_DELETION).order_by(Item.date_reported.desc()).all()
-    return render_template('admin/deletion_requests.html', items=items)
+    csrf_form = SimpleCsrfForm()
+    return render_template('admin/deletion_requests.html', items=items, csrf_form=csrf_form)
 
 @bp_admin.route('/deletion-requests/<int:item_id>/confirm', methods=['POST'])
 @login_required
