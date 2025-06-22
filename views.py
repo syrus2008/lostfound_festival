@@ -418,7 +418,7 @@ def delete_item(item_id):
     # Admin : suppression définitive
     if delete_form.validate_on_submit():
         if not current_user.check_password(delete_form.delete_password.data):
-            delete_form.delete_password.errors.append("Mot de passe incorrect.")
+            flash("Mot de passe incorrect.", "danger")
             return redirect(url_for('main.detail_item', item_id=item_id))
         db.session.delete(item)
         db.session.commit()
@@ -429,7 +429,13 @@ def delete_item(item_id):
         if old_status in ['lost', 'found', 'returned']:
             return redirect(url_for('main.list_items', status=old_status))
         return redirect(url_for('main.index'))
-    flash('Erreur lors de la suppression.', 'danger')
+    # Affiche les erreurs du formulaire si la suppression échoue
+    if delete_form.errors:
+        for field, errors in delete_form.errors.items():
+            for error in errors:
+                flash(f"Erreur {field} : {error}", 'danger')
+    else:
+        flash('Erreur lors de la suppression.', 'danger')
     return redirect(url_for('main.detail_item', item_id=item_id))
 
 @bp.route('/export/<status>')
