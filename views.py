@@ -253,7 +253,8 @@ def list_items(status):
         categories=categories,
         selected_category=cat_filter,
         search_query=q,
-        matches_map=matches_map
+        matches_map=matches_map,
+        Status=Status  # Ajout de Status dans le contexte pour Jinja2
     )
 
 @bp.route('/item/<int:item_id>', methods=['GET', 'POST'])
