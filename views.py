@@ -446,7 +446,7 @@ def export_items(status):
     response.headers['Content-Disposition'] = f'attachment; filename=export_{st.value}.html'
     return response
 
-{{ ... }}
+
 @bp.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename)
