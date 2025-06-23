@@ -444,13 +444,45 @@ def delete_item(item_id):
 @bp.route('/export/<status>')
 @login_required
 def export_items(status):
+    import base64
     try:
         st = Status(status)
     except ValueError:
         st = Status.LOST
 
     items = Item.query.filter_by(status=st).filter(Item.status != Status.PENDING_DELETION).order_by(Item.date_reported.desc()).all()
-    html = render_template('export_template.html', items=items, status=st.value)
+    items_export = []
+    for item in items:
+        photo_data = None
+        photo_filename = None
+        # Si plusieurs photos (relation), prendre la première sinon utiliser photo_filename
+        if hasattr(item, 'photos') and item.photos and len(item.photos) > 0:
+            photo_filename = item.photos[0].filename
+        elif item.photo_filename:
+            photo_filename = item.photo_filename
+        if photo_filename:
+            try:
+                chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], photo_filename)
+                with open(chemin, 'rb') as img_file:
+                    photo_data = base64.b64encode(img_file.read()).decode('utf-8')
+            except Exception as e:
+                photo_data = None
+        # Ajoute l'image encodée et le mimetype (jpeg/png)
+        ext = os.path.splitext(photo_filename)[1].lower() if photo_filename else ''
+        if ext in ['.jpg', '.jpeg']:
+            mime = 'image/jpeg'
+        elif ext == '.png':
+            mime = 'image/png'
+        else:
+            mime = ''
+        items_export.append({
+            **item.__dict__,
+            'category': item.category,
+            'photo_filename': photo_filename,
+            'photo_base64': photo_data,
+            'photo_mime': mime
+        })
+    html = render_template('export_template.html', items=items_export, status=st.value)
     response = make_response(html)
     response.headers['Content-Type'] = 'text/html; charset=utf-8'
     response.headers['Content-Disposition'] = f'attachment; filename=export_{st.value}.html'

@@ -53,20 +53,19 @@
           {% if current_user.is_authenticated %}
             <li class="nav-item"><span class="nav-link">{{ current_user.email }}</span></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.logout') }}">Déconnexion</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="exportDropdown" role="button" data-bs-toggle="dropdown">
+                Export HTML
+              </a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{{ url_for('main.export_items', status='lost') }}">Exporter perdus</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.export_items', status='found') }}">Exporter trouvés</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('main.export_items', status='returned') }}">Exporter rendus</a></li>
+              </ul>
+            </li>
           {% else %}
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.auth') }}">Authentification</a></li>
           {% endif %}
-        </ul>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="exportDropdown" role="button" data-bs-toggle="dropdown">
-              Export HTML
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="{{ url_for('main.export_items', status='lost') }}">Exporter perdus</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('main.export_items', status='found') }}">Exporter trouvés</a></li>
-              <li><a class="dropdown-item" href="{{ url_for('main.export_items', status='returned') }}">Exporter rendus</a></li>
-            </ul>
-          </li>
         </ul>
       </div>
     </div>

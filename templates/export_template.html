@@ -30,7 +30,15 @@
           <td>{{ item.comments or '' }}</td>
           <td>{{ item.location or '' }}</td>
           <td>{{ item.date_reported.strftime('%d/%m/%Y %H:%M') }}</td>
-          <td>{{ item.photo_filename or '' }}</td>
+          <td>
+            {% if item.photo_base64 and item.photo_mime %}
+              <img src="data:{{ item.photo_mime }};base64,{{ item.photo_base64 }}" alt="Photo objet" style="max-width:120px; max-height:120px; border-radius:8px; border:1px solid #ccc;" />
+            {% elif item.photo_filename %}
+              {{ item.photo_filename }}
+            {% else %}
+              <span class="text-muted">Pas de photo</span>
+            {% endif %}
+          </td>
           <td>{{ item.reporter_name }}</td>
           <td>{{ item.reporter_email }}</td>
           <td>{{ item.reporter_phone or '' }}</td>
