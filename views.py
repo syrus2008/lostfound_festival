@@ -29,7 +29,21 @@ def find_similar_items(titre, category_id, seuil=70):
     for obj in candidats:
         score = fuzz.token_sort_ratio(titre, obj.title)
         if score >= seuil:
-            similaires.append({'id': obj.id, 'title': obj.title, 'score': score})
+            # Détermination de la photo principale
+            if hasattr(obj, 'photos') and obj.photos and len(obj.photos) > 0:
+                photo_url = url_for('main.uploaded_file', filename=obj.photos[0].filename)
+            elif obj.photo_filename:
+                photo_url = url_for('main.uploaded_file', filename=obj.photo_filename)
+            else:
+                photo_url = None
+            similaires.append({
+                'id': obj.id,
+                'title': obj.title,
+                'score': score,
+                'category_name': obj.category.name if obj.category else None,
+                'photo_url': photo_url,
+                'url_detail': url_for('main.detail_item', item_id=obj.id)
+            })
     return similaires
 
 @bp.route('/')
@@ -500,7 +514,9 @@ def api_check_similar():
     if not titre or not cat_id:
         return {'similars': []}
     similars = find_similar_items(titre, cat_id, seuil=70)
-    return {'similars': similars}
+    # Retourne une vraie réponse JSON Flask
+    from flask import jsonify
+    return jsonify({'similars': similars})
 
 # ───────────────────────────────────────────────────────────────────────────────
 # Routes de correspondance globale Lost↔Found (nouvelles)

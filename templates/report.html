@@ -67,4 +67,27 @@
       </div>
     </div>
   </div>
+  <!-- Modal de suggestion de doublons -->
+  <div class="modal fade" id="doublonModal" tabindex="-1" aria-labelledby="doublonModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="doublonModalLabel">
+            <i class="bi bi-exclamation-triangle text-warning me-2"></i>Objets similaires trouvés
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+        </div>
+        <div class="modal-body">
+          <div id="doublonListContainer">
+            <ul id="doublonList" class="list-unstyled mb-0"></ul>
+          </div>
+          <div id="noDoublon" class="text-muted d-none">Aucun objet similaire trouvé.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="button" class="btn btn-primary" id="confirmSubmit">Continuer et créer quand même</button>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}
