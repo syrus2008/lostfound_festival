@@ -70,16 +70,23 @@
         {% if item.status != Status.PENDING_DELETION %}
         {# 1) Formulaire de correspondance si match_form est défini #}
         {% if match_form %}
-          <h5>Valider correspondance avec un objet existant</h5>
-          <form method="post">
-            {{ match_form.hidden_tag() }}
-            <div class="mb-3">
-              {{ match_form.match_with.label(class="form-label") }}
-              {{ match_form.match_with(class="form-select") }}
+          {% if not has_match %}
+            <h5>Valider correspondance avec un objet existant</h5>
+            <form method="post">
+              {{ match_form.hidden_tag() }}
+              <div class="mb-3">
+                {{ match_form.match_with.label(class="form-label") }}
+                {{ match_form.match_with(class="form-select") }}
+              </div>
+              <button type="submit" name="submit_match" class="btn btn-warning">Confirmer correspondance</button>
+            </form>
+            <hr>
+          {% else %}
+            <div class="alert alert-success mb-3">
+              <i class="bi bi-check-circle me-2"></i>
+              Une correspondance a déjà été validée pour cet objet.
             </div>
-            <button type="submit" name="submit_match" class="btn btn-warning">Confirmer correspondance</button>
-          </form>
-          <hr>
+          {% endif %}
         {% endif %}
 
         {# 2) Formulaire de réclamation classique #}
