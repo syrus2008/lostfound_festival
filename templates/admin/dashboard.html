@@ -41,15 +41,4 @@
     <div class="alert alert-info">Bienvenue dans l'administration. Utilisez le menu à gauche pour naviguer.</div>
   </div>
 </div>
-<ul class="nav flex-column">
-  <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('admin.admin_users') }}">Gestion des utilisateurs</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('admin.admin_logs') }}">Logs d'actions</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('admin.deletion_requests') }}">Demandes de suppression d'objets</a>
-  </li>
-</ul>
 {% endblock %}
