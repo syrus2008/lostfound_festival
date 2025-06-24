@@ -1,15 +1,33 @@
-{% extends 'base.html' %}
-{% block content %}
-<h2>Utilisateurs</h2>
-<table class="table">
-  <thead>
-    <tr><th>ID</th><th>Email</th><th>Rôle</th><th>Actions</th></tr>
-  </thead>
-  <tbody>
-    {% for user in users %}
-    <tr>
-      <td>{{ user.id }}</td>
-      <td>{{ user.email }}</td>
+{% extends 'admin/base.html' %}
+{% block admin_title %}Utilisateurs{% endblock %}
+{% block admin_content %}
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Nom</th>
+          <th>Email</th>
+          <th>Admin</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in users %}
+        <tr>
+          <td><a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="text-decoration-none">{{ user.id }}</a></td>
+          <td><a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="text-decoration-none">{{ user.first_name }} {{ user.last_name }}</a></td>
+          <td><a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="text-decoration-none">{{ user.email }}</a></td>
+          <td>{% if user.is_admin %}<span class="badge bg-success">Oui</span>{% else %}Non{% endif %}</td>
+          <td>
+            <a href="{{ url_for('admin.user_detail', user_id=user.id) }}" class="btn btn-sm btn-outline-primary">Détail</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
       <td>{{ 'Admin' if user.is_admin else 'Utilisateur' }}</td>
       <td><!-- actions à venir --></td>
     </tr>

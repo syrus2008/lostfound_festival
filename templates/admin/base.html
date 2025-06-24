@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% block title %}Admin | {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+      <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white {% if request.path == url_for('admin.admin_dashboard') %}active{% endif %}" href="{{ url_for('admin.admin_dashboard') }}">
+              <i class="bi bi-speedometer2"></i> Tableau de bord
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white {% if request.path.startswith(url_for('admin.deletion_requests')) %}active{% endif %}" href="{{ url_for('admin.deletion_requests') }}">
+              <i class="bi bi-trash"></i> Demandes de suppression
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white {% if request.path.startswith(url_for('admin.admin_users')) %}active{% endif %}" href="{{ url_for('admin.admin_users') }}">
+              <i class="bi bi-people"></i> Utilisateurs
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white {% if request.path.startswith(url_for('admin.admin_logs')) %}active{% endif %}" href="{{ url_for('admin.admin_logs') }}">
+              <i class="bi bi-journal-text"></i> Logs
+            </a>
+          </li>
+          <li class="nav-item mt-3">
+            <a class="nav-link text-secondary" href="{{ url_for('main.index') }}">
+              <i class="bi bi-arrow-left"></i> Retour au site
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+      <!-- Header admin -->
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+        <div class="d-flex align-items-center gap-3">
+          <span class="fs-4 fw-bold text-primary"><i class="bi bi-shield-lock-fill me-2"></i>Administration</span>
+          <span class="badge bg-primary d-none d-md-inline">LostFound Festival</span>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <span class="text-muted small">{{ current_user.first_name }} {{ current_user.last_name }}</span>
+          <span class="bg-secondary-subtle rounded-circle d-inline-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+            <i class="bi bi-person-circle fs-4 text-secondary"></i>
+          </span>
+        </div>
+      </div>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block admin_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+
+<!-- Bootstrap Icons CDN -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .sidebar {
+    min-height: 100vh;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+    background: linear-gradient(180deg, #212529 80%, #343a40 100%);
+  }
+  .sidebar .nav-link.active {
+    background: #0d6efd;
+    color: #fff !important;
+    font-weight: bold;
+    border-radius: 5px;
+  }
+  .sidebar .nav-link {
+    transition: background 0.2s;
+    border-radius: 5px;
+    margin-bottom: 2px;
+    font-size: 1.08rem;
+  }
+  .sidebar .nav-link:hover {
+    background: #0d6efd33;
+    color: #fff !important;
+  }
+  @media (max-width: 991.98px) {
+    #sidebarMenu {
+      position: fixed;
+      z-index: 1040;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: 220px;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-in-out;
+    }
+    #sidebarMenu.show {
+      transform: translateX(0);
+    }
+    .sidebar-backdrop {
+      display: block;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 1039;
+    }
+  }
+  @media (max-width: 767.98px) {
+    main {
+      padding: 1rem 0.5rem;
+    }
+    .sidebar {
+      font-size: 1rem;
+    }
+  }
+</style>
+<script>
+  // Sidebar responsive toggle
+  document.addEventListener('DOMContentLoaded', function() {
+    var sidebar = document.getElementById('sidebarMenu');
+    var backdrop;
+    function toggleSidebar(show) {
+      if (show) {
+        sidebar.classList.add('show');
+        backdrop = document.createElement('div');
+        backdrop.className = 'sidebar-backdrop';
+        backdrop.onclick = function() { toggleSidebar(false); };
+        document.body.appendChild(backdrop);
+      } else {
+        sidebar.classList.remove('show');
+        if (backdrop) backdrop.remove();
+      }
+    }
+    document.body.addEventListener('click', function(e) {
+      if (e.target.matches('[data-bs-toggle="sidebar"]')) {
+        e.preventDefault();
+        toggleSidebar(true);
+      }
+    });
+    window.toggleSidebar = toggleSidebar;
+  });
+</script>
+{% endblock %}

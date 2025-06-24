@@ -19,7 +19,17 @@ bp_admin = Blueprint('admin', __name__, url_prefix='/admin')
 @login_required
 @admin_required
 def admin_dashboard():
-    return render_template('admin/dashboard.html')
+    nb_found = Item.query.filter_by(status=Status.FOUND).count()
+    nb_lost = Item.query.filter_by(status=Status.LOST).count()
+    nb_users = User.query.count()
+    nb_deletions = Item.query.filter_by(status=Status.PENDING_DELETION).count()
+    return render_template(
+        'admin/dashboard.html',
+        nb_found=nb_found,
+        nb_lost=nb_lost,
+        nb_users=nb_users,
+        nb_deletions=nb_deletions
+    )
 
 from forms import SimpleCsrfForm
 
@@ -67,9 +77,68 @@ def admin_users():
     users = User.query.all()
     return render_template('admin/users.html', users=users)
 
+@bp_admin.route('/users/<int:user_id>')
+@login_required
+@admin_required
+def user_detail(user_id):
+    from forms import SimpleCsrfForm
+    user = User.query.get_or_404(user_id)
+    csrf_form = SimpleCsrfForm()
+    return render_template('admin/user_detail.html', user=user, csrf_form=csrf_form)
+
+@bp_admin.route('/users/<int:user_id>/toggle-admin', methods=['POST'])
+@login_required
+@admin_required
+def toggle_admin(user_id):
+    from forms import SimpleCsrfForm
+    form = SimpleCsrfForm()
+    user = User.query.get_or_404(user_id)
+    if form.validate_on_submit():
+        if user.id == current_user.id:
+            flash("Vous ne pouvez pas modifier votre propre statut admin.", "danger")
+        else:
+            user.is_admin = not user.is_admin
+            db.session.commit()
+            flash("Statut administrateur modifié.", "success")
+    else:
+        flash("Erreur de validation du formulaire.", "danger")
+    return redirect(url_for('admin.user_detail', user_id=user_id))
+
+@bp_admin.route('/users/<int:user_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_user(user_id):
+    from forms import SimpleCsrfForm
+    form = SimpleCsrfForm()
+    user = User.query.get_or_404(user_id)
+    if user.id == current_user.id:
+        flash("Vous ne pouvez pas supprimer votre propre compte.", "danger")
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+    if form.validate_on_submit():
+        db.session.delete(user)
+        db.session.commit()
+        flash("Utilisateur supprimé.", "success")
+        return redirect(url_for('admin.admin_users'))
+    else:
+        flash("Erreur de validation du formulaire.", "danger")
+        return redirect(url_for('admin.user_detail', user_id=user_id))
+
 @bp_admin.route('/logs')
 @login_required
 @admin_required
 def admin_logs():
-    logs = ActionLog.query.order_by(ActionLog.timestamp.desc()).limit(200).all()
-    return render_template('admin/logs.html', logs=logs)
+    # Recherche, filtre et pagination
+    from sqlalchemy import or_
+    page = request.args.get('page', 1, type=int)
+    per_page = 25
+    search = request.args.get('search', '', type=str).strip()
+    action_type = request.args.get('action_type', '', type=str).strip()
+    query = ActionLog.query
+    if search:
+        query = query.filter(or_(ActionLog.details.ilike(f'%{search}%'), ActionLog.action_type.ilike(f'%{search}%')))
+    if action_type:
+        query = query.filter(ActionLog.action_type == action_type)
+    logs = query.order_by(ActionLog.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
+    # Pour le filtre, récupérer tous les types d'actions distincts
+    action_types = [row[0] for row in db.session.query(ActionLog.action_type).distinct().all()]
+    return render_template('admin/logs.html', logs=logs, search=search, action_type=action_type, action_types=action_types)
