@@ -549,10 +549,11 @@ def headphone_loans():
 def return_headphone_loan(loan_id):
     from flask import request
     loan = HeadphoneLoan.query.get_or_404(loan_id)
-    data = request.get_json()
+    from flask import jsonify
+    data = request.get_json(silent=True)
+    if not data or 'signature' not in data:
+        return jsonify({'success': False, 'error': 'Signature manquante'}), 400
     signature = data.get('signature')
-    if not signature:
-        return {'success': False, 'error': 'Signature manquante'}, 400
     from datetime import datetime
     loan.signature = signature
     loan.return_date = datetime.utcnow()
