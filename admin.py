@@ -190,6 +190,19 @@ def helmet_rentals():
     csrf_form = SimpleCsrfForm()
     return render_template('admin/helmet_rentals.html', rentals=rentals, csrf_form=csrf_form)
 
+@bp_admin.route('/helmet-rentals/export')
+@login_required
+@admin_required
+def export_helmet_rentals():
+    rentals = HeadphoneLoan.query.order_by(HeadphoneLoan.loan_date.desc()).all()
+    # Format HTML (peut être adapté pour CSV)
+    html = render_template('export_helmet_rentals.html', rentals=rentals)
+    from flask import make_response
+    response = make_response(html)
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    response.headers['Content-Disposition'] = 'attachment; filename=export_locations_casques.html'
+    return response
+
 @bp_admin.route('/helmet-rentals/<int:rental_id>/delete', methods=['POST'])
 @login_required
 @admin_required
