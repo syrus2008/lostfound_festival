@@ -28,11 +28,7 @@
               <i class="bi bi-journal-text"></i> Logs
             </a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link text-white {% if request.path.startswith(url_for('admin.headphone_loans')) %}active{% endif %}" href="{{ url_for('admin.headphone_loans') }}">
-              <i class="bi bi-headphones"></i> Gestion des prêts
-            </a>
-          </li>
+          
           <li class="nav-item mt-3">
             <a class="nav-link text-secondary" href="{{ url_for('main.index') }}">
               <i class="bi bi-arrow-left"></i> Retour au site

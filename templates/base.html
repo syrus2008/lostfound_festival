@@ -44,6 +44,7 @@
               </ul>
             </li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.list_matches') }}">Correspondances</a></li>
+<li class="nav-item"><a class="nav-link" href="{{ url_for('main.headphone_loans') }}">Prêts de casques</a></li>
             {% if current_user.is_admin %}
               <li class="nav-item"><a class="nav-link text-danger fw-bold" href="{{ url_for('admin.admin_dashboard') }}">Admin</a></li>
             {% endif %}

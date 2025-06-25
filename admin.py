@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app import db
-from models import User, ActionLog, Item, Status, HeadphoneLoan
+from models import User, ActionLog, Item, Status
 
 def admin_required(f):
     from functools import wraps
@@ -31,7 +31,7 @@ def admin_dashboard():
         nb_deletions=nb_deletions
     )
 
-from forms import SimpleCsrfForm
+from forms import SimpleCsrfForm, HeadphoneLoanForm
 
 @bp_admin.route('/deletion-requests')
 @login_required
@@ -81,7 +81,7 @@ def admin_users():
 @login_required
 @admin_required
 def user_detail(user_id):
-    from forms import SimpleCsrfForm
+    from forms import SimpleCsrfForm, HeadphoneLoanForm
     user = User.query.get_or_404(user_id)
     csrf_form = SimpleCsrfForm()
     return render_template('admin/user_detail.html', user=user, csrf_form=csrf_form)
@@ -90,7 +90,7 @@ def user_detail(user_id):
 @login_required
 @admin_required
 def toggle_admin(user_id):
-    from forms import SimpleCsrfForm
+    from forms import SimpleCsrfForm, HeadphoneLoanForm
     form = SimpleCsrfForm()
     user = User.query.get_or_404(user_id)
     if form.validate_on_submit():
@@ -108,7 +108,7 @@ def toggle_admin(user_id):
 @login_required
 @admin_required
 def delete_user(user_id):
-    from forms import SimpleCsrfForm
+    from forms import SimpleCsrfForm, HeadphoneLoanForm
     form = SimpleCsrfForm()
     user = User.query.get_or_404(user_id)
     if user.id == current_user.id:
@@ -123,45 +123,7 @@ def delete_user(user_id):
         flash("Erreur de validation du formulaire.", "danger")
         return redirect(url_for('admin.user_detail', user_id=user_id))
 
-@bp_admin.route('/loans', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def headphone_loans():
-    form = HeadphoneLoanForm()
-    search = request.args.get('q', '', type=str).strip()
-    query = HeadphoneLoan.query
-    if search:
-        query = query.filter((HeadphoneLoan.first_name.ilike(f'%{search}%')) | (HeadphoneLoan.last_name.ilike(f'%{search}%')))
-    loans = query.order_by(HeadphoneLoan.loan_date.desc()).all()
-    if form.validate_on_submit():
-        loan = HeadphoneLoan(
-            first_name=form.first_name.data,
-            last_name=form.last_name.data,
-            phone=form.phone.data,
-            deposit_type=form.deposit_type.data,
-            deposit_details=form.deposit_details.data
-        )
-        db.session.add(loan)
-        db.session.commit()
-        flash("Prêt enregistré !", "success")
-        return redirect(url_for('admin.headphone_loans'))
-    return render_template('admin/loans.html', form=form, loans=loans, search=search)
 
-@bp_admin.route('/loans/<int:loan_id>/return', methods=['POST'])
-@login_required
-@admin_required
-def return_headphone_loan(loan_id):
-    import json
-    loan = HeadphoneLoan.query.get_or_404(loan_id)
-    data = request.get_json()
-    signature = data.get('signature')
-    if not signature:
-        return {'success': False, 'error': 'Signature manquante'}, 400
-    from datetime import datetime
-    loan.signature = signature
-    loan.return_date = datetime.utcnow()
-    db.session.commit()
-    return {'success': True}
 
 @bp_admin.route('/logs')
 @login_required

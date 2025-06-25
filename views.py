@@ -12,7 +12,8 @@ from app import app, db
 from models import Item, Category, Status
 from forms import ItemForm, ClaimForm, ConfirmReturnForm, MatchForm, LoginForm, RegisterForm, DeleteForm
 from flask_login import login_user, logout_user, login_required, current_user
-from models import User, ActionLog
+from models import User, ActionLog, HeadphoneLoan, DepositType
+from forms import HeadphoneLoanForm
 
 bp = Blueprint('main', __name__)
 
@@ -517,6 +518,44 @@ def api_check_similar():
     # Retourne une vraie réponse JSON Flask
     from flask import jsonify
     return jsonify({'similars': similars})
+
+@bp.route('/loans', methods=['GET', 'POST'])
+@login_required
+def headphone_loans():
+    form = HeadphoneLoanForm()
+    search = request.args.get('q', '', type=str).strip()
+    query = HeadphoneLoan.query
+    if search:
+        query = query.filter((HeadphoneLoan.first_name.ilike(f'%{{search}}%')) | (HeadphoneLoan.last_name.ilike(f'%{{search}}%')))
+    loans = query.order_by(HeadphoneLoan.loan_date.desc()).all()
+    if form.validate_on_submit():
+        loan = HeadphoneLoan(
+            first_name=form.first_name.data,
+            last_name=form.last_name.data,
+            phone=form.phone.data,
+            deposit_type=DepositType(form.deposit_type.data),
+            deposit_details=form.deposit_details.data
+        )
+        db.session.add(loan)
+        db.session.commit()
+        flash("Prêt enregistré !", "success")
+        return redirect(url_for('main.headphone_loans'))
+    return render_template('loans.html', form=form, loans=loans, search=search)
+
+@bp.route('/loans/<int:loan_id>/return', methods=['POST'])
+@login_required
+def return_headphone_loan(loan_id):
+    from flask import request
+    loan = HeadphoneLoan.query.get_or_404(loan_id)
+    data = request.get_json()
+    signature = data.get('signature')
+    if not signature:
+        return {'success': False, 'error': 'Signature manquante'}, 400
+    from datetime import datetime
+    loan.signature = signature
+    loan.return_date = datetime.utcnow()
+    db.session.commit()
+    return {'success': True}
 
 # ───────────────────────────────────────────────────────────────────────────────
 # Routes de correspondance globale Lost↔Found (nouvelles)
