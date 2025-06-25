@@ -22,14 +22,12 @@
         <div class="col-md-3">
           {{ form.deposit_type.label(class="form-label mb-2") }}
           <div class="d-flex align-items-center gap-3">
-            <div class="form-check">
-              {{ form.deposit_type(class="form-check-input", id="depositTypeIdCard", value="id_card", style="margin-top:0.3em;") }}
-              <label for="depositTypeIdCard" class="form-check-label">Carte d'identité</label>
-            </div>
-            <div class="form-check">
-              {{ form.deposit_type(class="form-check-input", id="depositTypeCash", value="cash", style="margin-top:0.3em;") }}
-              <label for="depositTypeCash" class="form-check-label">Caution en argent</label>
-            </div>
+            {% for subfield in form.deposit_type %}
+              <div class="form-check">
+                {{ subfield(class="form-check-input", id=subfield.id) }}
+                <label for="{{ subfield.id }}" class="form-check-label">{{ subfield.label.text }}</label>
+              </div>
+            {% endfor %}
           </div>
         </div>
         <div class="col-md-3" id="depositAmountField" style="display:none;">
@@ -153,11 +151,34 @@ function updateDepositAmountField() {
     if (radio.checked && radio.value === 'cash') show = true;
   }
   document.getElementById('depositAmountField').style.display = show ? '' : 'none';
+  if (show) {
+    autoFillDepositAmount();
+  }
+}
+function autoFillDepositAmount() {
+  var quantityInput = document.getElementById('quantity');
+  var depositAmountInput = document.getElementById('deposit_amount');
+  if (quantityInput && depositAmountInput) {
+    let q = parseInt(quantityInput.value, 10);
+    if (isNaN(q) || q < 1) q = 1;
+    depositAmountInput.value = (q * 20).toFixed(2);
+  }
 }
 window.addEventListener('DOMContentLoaded', function() {
   var radios = document.getElementsByName('deposit_type');
   for (var i = 0; i < radios.length; i++) {
     radios[i].addEventListener('change', updateDepositAmountField);
+  }
+  var quantityInput = document.getElementById('quantity');
+  if (quantityInput) {
+    quantityInput.addEventListener('input', function() {
+      const radios = document.getElementsByName('deposit_type');
+      for (const radio of radios) {
+        if (radio.checked && radio.value === 'cash') {
+          autoFillDepositAmount();
+        }
+      }
+    });
   }
   updateDepositAmountField();
 });
