@@ -1,0 +1,163 @@
+{% extends 'admin/base.html' %}
+{% block admin_title %}Gestion des prêts de casques{% endblock %}
+{% block admin_content %}
+<div class="card shadow-sm border-0 mb-4">
+  <div class="card-body">
+    <h2>Enregistrer un prêt de casque</h2>
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="row g-3">
+        <div class="col-md-3">
+          {{ form.first_name.label(class="form-label") }}
+          {{ form.first_name(class="form-control") }}
+        </div>
+        <div class="col-md-3">
+          {{ form.last_name.label(class="form-label") }}
+          {{ form.last_name(class="form-control") }}
+        </div>
+        <div class="col-md-3">
+          {{ form.phone.label(class="form-label") }}
+          {{ form.phone(class="form-control") }}
+        </div>
+        <div class="col-md-3">
+          {{ form.deposit_type.label(class="form-label") }}
+          {{ form.deposit_type(class="form-select") }}
+        </div>
+        <div class="col-md-6">
+          {{ form.deposit_details.label(class="form-label") }}
+          {{ form.deposit_details(class="form-control") }}
+        </div>
+        <div class="col-md-12">
+          {{ form.submit(class="btn btn-success mt-2") }}
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="card-body">
+    <h2>Liste des prêts de casques</h2>
+    <form method="get" class="mb-3">
+      <div class="row g-2 align-items-center">
+        <div class="col-auto">
+          <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Filtrer par nom ou prénom">
+        </div>
+        <div class="col-auto">
+          <button class="btn btn-outline-primary" type="submit">Rechercher</button>
+        </div>
+      </div>
+    </form>
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Téléphone</th>
+          <th>Caution</th>
+          <th>Date prêt</th>
+          <th>Date retour</th>
+          <th>Signature retour</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in loans %}
+        <tr>
+          <td>{{ loan.last_name }}</td>
+          <td>{{ loan.first_name }}</td>
+          <td>{{ loan.phone }}</td>
+          <td>
+            {% if loan.deposit_type == 'id_card' or loan.deposit_type.name == 'ID_CARD' %}
+              Carte d'identité
+            {% else %}
+              Caution en argent
+            {% endif %}
+            <br><small>{{ loan.deposit_details }}</small>
+          </td>
+          <td>{{ loan.loan_date.strftime('%d/%m/%Y %H:%M') }}</td>
+          <td>
+            {% if loan.return_date %}
+              {{ loan.return_date.strftime('%d/%m/%Y %H:%M') }}
+            {% else %}
+              <span class="badge bg-warning text-dark">En cours</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if loan.signature %}
+              <img src="{{ loan.signature }}" alt="Signature" style="max-width:120px; border:1px solid #ccc; background:#fff;">
+            {% elif not loan.return_date %}
+              <button class="btn btn-sm btn-outline-success" data-loan-id="{{ loan.id }}" onclick="openSignatureModal({{ loan.id }})">Retourner & signer</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center">Aucun prêt enregistré</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal signature (sera rempli dynamiquement) -->
+<div class="modal fade" id="signatureModal" tabindex="-1" aria-labelledby="signatureModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="signatureModalLabel">Signature de retour du casque</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body">
+        <canvas id="signaturePad" style="border:1px solid #ccc; width:100%; height:200px;"></canvas>
+        <div class="mt-2">
+          <button type="button" class="btn btn-secondary" onclick="clearSignature()">Effacer</button>
+          <button type="button" class="btn btn-primary" onclick="saveSignature()">Enregistrer la signature</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.5/dist/signature_pad.umd.min.js"></script>
+<script>
+var signaturePad;
+var currentLoanId;
+function openSignatureModal(loanId) {
+  currentLoanId = loanId;
+  var modal = new bootstrap.Modal(document.getElementById('signatureModal'));
+  modal.show();
+  var canvas = document.getElementById('signaturePad');
+  // Fix: force redraw for Bootstrap modal
+  setTimeout(function() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = 200;
+    signaturePad = new SignaturePad(canvas);
+  }, 200);
+}
+function clearSignature() {
+  if (signaturePad) signaturePad.clear();
+}
+function saveSignature() {
+  if (!signaturePad || signaturePad.isEmpty()) {
+    alert('Veuillez signer avant de valider.');
+    return;
+  }
+  var dataUrl = signaturePad.toDataURL();
+  fetch(`/admin/loans/` + currentLoanId + `/return`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': (typeof csrf_token !== 'undefined' ? csrf_token : '')
+    },
+    body: JSON.stringify({ signature: dataUrl })
+  })
+  .then(function(resp) { return resp.json(); })
+  .then(function(data) {
+    if (data.success) {
+      location.reload();
+    } else {
+      alert('Erreur lors de l\'enregistrement.');
+    }
+  });
+}
+</script>
+{% endblock %}

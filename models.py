@@ -3,6 +3,26 @@ from datetime import datetime
 from app import db
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+import enum
+
+class DepositType(enum.Enum):
+    ID_CARD = 'id_card'
+    CASH = 'cash'
+
+class HeadphoneLoan(db.Model):
+    __tablename__ = 'headphone_loans'
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(50), nullable=False)
+    deposit_type = db.Column(db.Enum(DepositType), nullable=False)
+    deposit_details = db.Column(db.String(200), nullable=True)
+    loan_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
+    return_date = db.Column(db.DateTime, nullable=True)
+    signature = db.Column(db.Text, nullable=True)  # Image base64 de la signature
+
+    def __repr__(self):
+        return f'<HeadphoneLoan {self.first_name} {self.last_name}>'
 
 class Category(db.Model):
     __tablename__ = 'categories'
