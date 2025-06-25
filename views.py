@@ -527,7 +527,9 @@ def headphone_loans():
     query = HeadphoneLoan.query
     if search:
         query = query.filter((HeadphoneLoan.first_name.ilike(f'%{{search}}%')) | (HeadphoneLoan.last_name.ilike(f'%{{search}}%')))
-    loans = query.order_by(HeadphoneLoan.loan_date.desc()).all()
+    # Exclure les prêts en attente de suppression
+    from models import LoanStatus
+    loans = query.filter(HeadphoneLoan.status != LoanStatus.PENDING_DELETION).order_by(HeadphoneLoan.loan_date.desc()).all()
     if form.validate_on_submit():
         loan = HeadphoneLoan(
             first_name=form.first_name.data,
@@ -543,6 +545,35 @@ def headphone_loans():
         flash("Prêt enregistré !", "success")
         return redirect(url_for('main.headphone_loans'))
     return render_template('loans.html', form=form, loans=loans, search=search)
+
+from flask_wtf import FlaskForm
+from flask_wtf.csrf import validate_csrf
+from flask import abort
+
+@bp.route('/loans/<int:loan_id>/request_deletion', methods=['POST'])
+@login_required
+def request_loan_deletion(loan_id):
+    from models import HeadphoneLoan, LoanStatus
+    from app import db
+    from flask import request
+    loan = HeadphoneLoan.query.get_or_404(loan_id)
+    # Vérifie que le prêt n'est pas déjà en attente
+    if loan.status == LoanStatus.PENDING_DELETION:
+        flash("Ce prêt est déjà en attente de suppression.", "warning")
+        return redirect(url_for('main.headphone_loans'))
+    # CSRF protection
+    try:
+        validate_csrf(request.form.get('csrf_token'))
+    except Exception:
+        abort(400, description="CSRF token invalide.")
+    # Stocke le statut original
+    if not loan.previous_status:
+        loan.previous_status = loan.status
+    loan.status = LoanStatus.PENDING_DELETION
+    db.session.commit()
+    log_action(current_user.id, 'request_loan_deletion', f'Demande suppression prêt casque: {loan.id}')
+    flash("Demande de suppression envoyée à l'administration.", "info")
+    return redirect(url_for('main.headphone_loans'))
 
 @bp.route('/loans/<int:loan_id>/return', methods=['POST'])
 @login_required

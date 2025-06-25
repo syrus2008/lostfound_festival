@@ -39,8 +39,10 @@ from forms import SimpleCsrfForm, HeadphoneLoanForm
 @admin_required
 def deletion_requests():
     items = Item.query.filter_by(status=Status.PENDING_DELETION).order_by(Item.date_reported.desc()).all()
+    from models import HeadphoneLoan, LoanStatus
+    loans = HeadphoneLoan.query.filter_by(status=LoanStatus.PENDING_DELETION).order_by(HeadphoneLoan.loan_date.desc()).all()
     csrf_form = SimpleCsrfForm()
-    return render_template('admin/deletion_requests.html', items=items, csrf_form=csrf_form)
+    return render_template('admin/deletion_requests.html', items=items, loans=loans, csrf_form=csrf_form)
 
 @bp_admin.route('/deletion-requests/<int:item_id>/confirm', methods=['POST'])
 @login_required
@@ -52,6 +54,54 @@ def confirm_deletion(item_id):
     ActionLog.query.session.add(ActionLog(user_id=current_user.id, action_type='confirm_deletion', details=f'Suppression validée pour objet {item_id}'))
     db.session.commit()
     flash("Suppression définitive effectuée.", "success")
+    return redirect(url_for('admin.deletion_requests'))
+
+@bp_admin.route('/deletion-requests/<int:loan_id>/confirm-loan', methods=['POST'])
+@login_required
+@admin_required
+def confirm_loan_deletion(loan_id):
+    from models import HeadphoneLoan
+    from forms import SimpleCsrfForm
+    form = SimpleCsrfForm()
+    loan = HeadphoneLoan.query.get_or_404(loan_id)
+    if form.validate_on_submit():
+        ActionLog.query.session.add(ActionLog(
+            user_id=current_user.id,
+            action_type='confirm_loan_deletion',
+            details=f'Suppression validée pour prêt casque {loan.id}'
+        ))
+        db.session.delete(loan)
+        db.session.commit()
+        flash("Prêt de casque supprimé définitivement.", "success")
+    else:
+        flash("Erreur de validation du formulaire.", "danger")
+    return redirect(url_for('admin.deletion_requests'))
+
+@bp_admin.route('/deletion-requests/<int:loan_id>/reject-loan', methods=['POST'])
+@login_required
+@admin_required
+def reject_loan_deletion(loan_id):
+    from models import HeadphoneLoan, LoanStatus
+    from forms import SimpleCsrfForm
+    form = SimpleCsrfForm()
+    loan = HeadphoneLoan.query.get_or_404(loan_id)
+    if form.validate_on_submit():
+        # Restaure le statut original si connu, sinon ACTIVE par défaut
+        if loan.previous_status:
+            loan.status = loan.previous_status
+            loan.previous_status = None
+        else:
+            loan.status = LoanStatus.ACTIVE
+        db.session.commit()
+        ActionLog.query.session.add(ActionLog(
+            user_id=current_user.id,
+            action_type='reject_loan_deletion',
+            details=f'Restauration prêt casque {loan.id}'
+        ))
+        db.session.commit()
+        flash("Demande de suppression rejetée. Le prêt est de nouveau visible.", "info")
+    else:
+        flash("Erreur de validation du formulaire.", "danger")
     return redirect(url_for('admin.deletion_requests'))
 
 @bp_admin.route('/deletion-requests/<int:item_id>/reject', methods=['POST'])

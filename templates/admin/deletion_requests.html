@@ -51,4 +51,45 @@
     </table>
   </div>
 </div>
+
+<div class="card shadow-sm border-0 mt-4">
+  <div class="card-body">
+    <h2>Demandes de suppression de prêts de casques</h2>
+    <table class="table table-hover align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>#</th>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Téléphone</th>
+          <th>Date prêt</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for loan in loans %}
+        <tr>
+          <td>{{ loan.id }}</td>
+          <td>{{ loan.last_name }}</td>
+          <td>{{ loan.first_name }}</td>
+          <td>{{ loan.phone }}</td>
+          <td>{{ loan.loan_date.strftime('%d/%m/%Y %H:%M') if loan.loan_date else '' }}</td>
+          <td class="text-nowrap">
+            <form method="post" action="{{ url_for('admin.confirm_loan_deletion', loan_id=loan.id) }}" style="display:inline-block;">
+  {{ csrf_form.hidden_tag() }}
+  <button class="btn btn-sm btn-danger mb-1" type="submit" title="Supprimer"><i class="bi bi-check-circle"></i> Supprimer</button>
+</form>
+<form method="post" action="{{ url_for('admin.reject_loan_deletion', loan_id=loan.id) }}" style="display:inline-block;">
+  {{ csrf_form.hidden_tag() }}
+  <button class="btn btn-sm btn-secondary mb-1" type="submit" title="Restaurer"><i class="bi bi-x-circle"></i> Restaurer</button>
+</form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="text-center">Aucune demande en attente</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 {% endblock %}

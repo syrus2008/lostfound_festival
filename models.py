@@ -9,6 +9,11 @@ class DepositType(enum.Enum):
     ID_CARD = 'id_card'
     CASH = 'cash'
 
+class LoanStatus(enum.Enum):
+    ACTIVE = 'active'
+    PENDING_DELETION = 'pending_deletion'
+    DELETED = 'deleted'
+
 class HeadphoneLoan(db.Model):
     __tablename__ = 'headphone_loans'
     id = db.Column(db.Integer, primary_key=True)
@@ -22,9 +27,11 @@ class HeadphoneLoan(db.Model):
     loan_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
     return_date = db.Column(db.DateTime, nullable=True)
     signature = db.Column(db.Text, nullable=True)  # Image base64 de la signature
+    status = db.Column(db.Enum(LoanStatus), nullable=False, default=LoanStatus.ACTIVE, index=True)
+    previous_status = db.Column(db.Enum(LoanStatus), nullable=True)
 
     def __repr__(self):
-        return f'<HeadphoneLoan {self.first_name} {self.last_name}>'
+        return f'<HeadphoneLoan {self.first_name} {self.last_name} ({self.status.value})>'
 
 class Category(db.Model):
     __tablename__ = 'categories'

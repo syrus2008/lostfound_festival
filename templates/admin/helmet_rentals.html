@@ -87,7 +87,15 @@
               {% endif %}
             </td>
             <td>
-              <form method="POST" action="{{ url_for('admin.delete_rental', rental_id=rental.id) }}" class="d-inline delete-rental-form"
+              {% if rental.status.name == 'ACTIVE' or rental.status == 'active' %}
+              <form method="POST" action="{{ url_for('admin.request_rental_deletion', rental_id=rental.id) }}" class="d-inline">
+                {{ csrf_form.hidden_tag() }}
+                <button type="submit" class="btn btn-sm btn-outline-warning" title="Demander suppression">
+                  <i class="bi bi-hourglass-split"></i>
+                </button>
+              </form>
+{% endif %}
+<form method="POST" action="{{ url_for('admin.delete_rental', rental_id=rental.id) }}" class="d-inline delete-rental-form"
                     data-first-name="{{ rental.first_name }}" 
                     data-last-name="{{ rental.last_name }}" 
                     data-quantity="{{ rental.quantity }}" 

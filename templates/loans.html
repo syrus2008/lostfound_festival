@@ -109,10 +109,18 @@
             {% endif %}
           </td>
           <td>
-            {% if not loan.return_date %}
-            <button class="btn btn-outline-success btn-sm" data-loan-id="{{ loan.id }}" onclick="openSignatureModal({{ loan.id }})">Retourner</button>
+            {% if loan.status.name == 'PENDING_DELETION' %}
+              <span class="badge bg-warning text-dark">En attente suppression</span>
+            {% elif not loan.return_date %}
+              <div class="d-flex flex-column flex-md-row align-items-start gap-1">
+                <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#signatureModal{{ loan.id }}">Retourner</button>
+                <form method="post" action="{{ url_for('main.request_loan_deletion', loan_id=loan.id) }}" style="display:inline;" onsubmit="return confirm('Demander la suppression de ce prêt ?');">
+                  {{ csrf_token() }}
+                  <button type="submit" class="btn btn-outline-danger btn-sm ms-2">Demander suppression</button>
+                </form>
+              </div>
             {% else %}
-            <span class="badge bg-success">Retourné</span>
+              <span class="badge bg-success">Retourné</span>
             {% endif %}
           </td>
         </tr>
