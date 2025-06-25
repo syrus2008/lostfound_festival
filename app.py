@@ -2,6 +2,8 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from flask_login import LoginManager
+import sqlalchemy
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'change_this_in_prod')
@@ -28,6 +30,26 @@ import models
 from models import User
 with app.app_context():
     db.create_all()
+    # Création sécurisée de la table headphone_loans si elle n'existe pas déjà
+    try:
+        engine = db.get_engine()
+        with engine.connect() as conn:
+            conn.execute(sqlalchemy.text('''
+                CREATE TABLE IF NOT EXISTS headphone_loans (
+                    id SERIAL PRIMARY KEY,
+                    first_name VARCHAR(100) NOT NULL,
+                    last_name VARCHAR(100) NOT NULL,
+                    phone VARCHAR(50) NOT NULL,
+                    deposit_type VARCHAR(20) NOT NULL,
+                    deposit_details VARCHAR(200),
+                    loan_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    return_date TIMESTAMP,
+                    signature TEXT
+                )
+            '''))
+    except Exception as e:
+        import sys
+        print(f"[WARN] Impossible de créer la table headphone_loans automatiquement : {e}", file=sys.stderr)
 
 @login_manager.user_loader
 def load_user(user_id):
