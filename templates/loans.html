@@ -81,18 +81,38 @@
       <tbody>
         {% for loan in loans %}
         <tr>
-          <td>{{ loan.quantity }}</td>
           <td>{{ loan.last_name }}</td>
           <td>{{ loan.first_name }}</td>
           <td>{{ loan.phone }}</td>
+          <td>{{ loan.quantity }}</td>
           <td>{{ loan.deposit_type.value if loan.deposit_type else '' }}<br>{{ loan.deposit_details }}</td>
           <td>{% if loan.deposit_amount %}{{ '%.2f'|format(loan.deposit_amount) }}{% endif %}</td>
           <td>{{ loan.loan_date.strftime('%d/%m/%Y %H:%M') if loan.loan_date else '' }}</td>
           <td>{{ loan.return_date.strftime('%d/%m/%Y %H:%M') if loan.return_date else '' }}</td>
           <td>
-            {% if loan.signature %}
+            {% if not loan.return_date %}
+              <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#signatureModal{{ loan.id }}">Retourner</button>
+              <!-- Modal pour signature -->
+              <div class="modal fade" id="signatureModal{{ loan.id }}" tabindex="-1" aria-labelledby="signatureModalLabel{{ loan.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="signatureModalLabel{{ loan.id }}">Signature de retour</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                      <canvas id="signaturePad{{ loan.id }}" width="400" height="200" style="border:1px solid #ccc;"></canvas>
+                      <div class="mt-2">
+                        <button class="btn btn-secondary btn-sm" onclick="clearSignature({{ loan.id }})">Effacer</button>
+                        <button class="btn btn-primary btn-sm" onclick="saveSignature({{ loan.id }})">Valider</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% elif loan.signature %}
               <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#signatureModal{{ loan.id }}">Voir</button>
-              <!-- Modal Signature -->
+              <!-- Modal pour voir la signature -->
               <div class="modal fade" id="signatureModal{{ loan.id }}" tabindex="-1" aria-labelledby="signatureModalLabel{{ loan.id }}" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                   <div class="modal-content">
@@ -113,9 +133,8 @@
               <span class="badge bg-warning text-dark">En attente suppression</span>
             {% elif not loan.return_date %}
               <div class="d-flex flex-column flex-md-row align-items-start gap-1">
-                <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#signatureModal{{ loan.id }}">Retourner</button>
                 <form method="post" action="{{ url_for('main.request_loan_deletion', loan_id=loan.id) }}" style="display:inline;" onsubmit="return confirm('Demander la suppression de ce prêt ?');">
-                  {{ csrf_token() }}
+                  {{ form.csrf_token }}
                   <button type="submit" class="btn btn-outline-danger btn-sm ms-2">Demander suppression</button>
                 </form>
               </div>
@@ -151,6 +170,58 @@
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.6/dist/signature_pad.umd.min.js"></script>
 <script>
+// Gestion signature dynamique par prêt
+const signaturePads = {};
+function initSignaturePad(loanId) {
+  const canvas = document.getElementById('signaturePad' + loanId);
+  if (canvas && !signaturePads[loanId]) {
+    signaturePads[loanId] = new SignaturePad(canvas);
+  }
+}
+function clearSignature(loanId) {
+  if (signaturePads[loanId]) signaturePads[loanId].clear();
+}
+function saveSignature(loanId) {
+  const pad = signaturePads[loanId];
+  if (!pad || pad.isEmpty()) {
+    alert('Merci de signer avant de valider.');
+    return;
+  }
+  const dataUrl = pad.toDataURL();
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  fetch(`/loans/${loanId}/return`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken || ''
+    },
+    body: JSON.stringify({ signature: dataUrl })
+  })
+    .then(async resp => {
+      let data;
+      try { data = await resp.json(); } catch (e) {
+        alert('Erreur serveur: réponse non conforme (pas du JSON).');
+        return;
+      }
+      if (resp.ok && data.success) {
+        location.reload();
+      } else {
+        alert('Erreur: ' + (data && data.error ? data.error : 'Impossible de sauvegarder la signature.'));
+      }
+    })
+    .catch(err => {
+      alert('Erreur réseau ou JSON: ' + err);
+    });
+}
+// Bootstrap : initialisation du pad à l’ouverture du modal
+window.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.modal.fade[id^="signatureModal"]').forEach(function(modal) {
+    modal.addEventListener('shown.bs.modal', function() {
+      const loanId = this.id.replace('signatureModal', '');
+      initSignaturePad(loanId);
+    });
+  });
+});
 // Affiche/masque le champ montant selon le choix de la caution
 function updateDepositAmountField() {
   const radios = document.getElementsByName('deposit_type');
