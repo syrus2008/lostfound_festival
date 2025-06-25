@@ -208,9 +208,13 @@ document.getElementById('saveSignature').onclick = function() {
     return;
   }
   const dataUrl = signaturePad.toDataURL();
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
   fetch(`/loans/${currentLoanId}/return`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken || ''
+    },
     body: JSON.stringify({ signature: dataUrl })
   })
     .then(async resp => {
