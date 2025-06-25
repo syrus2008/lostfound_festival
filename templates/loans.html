@@ -36,7 +36,7 @@
         </div>
         <div class="col-md-3">
           {{ form.quantity.label(class="form-label") }}
-          {{ form.quantity(class="form-control") }}
+          {{ form.quantity(class="form-control", min="1", step="1", pattern="[0-9]+", oninput="if(this.value<1)this.value=1;") }}
         </div>
         <div class="col-md-6">
           {{ form.deposit_details.label(class="form-label") }}
@@ -212,13 +212,25 @@ document.getElementById('saveSignature').onclick = function() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ signature: dataUrl })
-  }).then(resp => resp.json()).then(data => {
-    if (data.success) {
-      location.reload();
-    } else {
-      alert('Erreur: ' + (data.error || 'Impossible de sauvegarder la signature.'));
-    }
-  });
+  })
+    .then(async resp => {
+      let data;
+      try {
+        data = await resp.json();
+      } catch (e) {
+        const text = await resp.text();
+        alert('Erreur serveur: ' + (text.length < 500 ? text : text.slice(0,500)+'...'));
+        return;
+      }
+      if (resp.ok && data.success) {
+        location.reload();
+      } else {
+        alert('Erreur: ' + (data && data.error ? data.error : 'Impossible de sauvegarder la signature.'));
+      }
+    })
+    .catch(err => {
+      alert('Erreur réseau ou JSON: ' + err);
+    });
 };
 </script>
 {% endblock %}
