@@ -4,7 +4,7 @@
 <div class="card shadow-sm border-0 mb-4">
   <div class="card-body">
     <h2>Enregistrer un prêt de casque</h2>
-    <form method="post">
+    <form method="post" onsubmit="return validateQuantity();">
       {{ form.hidden_tag() }}
       <div class="row g-3">
         <div class="col-md-3">
@@ -218,8 +218,7 @@ document.getElementById('saveSignature').onclick = function() {
       try {
         data = await resp.json();
       } catch (e) {
-        const text = await resp.text();
-        alert('Erreur serveur: ' + (text.length < 500 ? text : text.slice(0,500)+'...'));
+        alert('Erreur serveur: réponse non conforme (pas du JSON).');
         return;
       }
       if (resp.ok && data.success) {
@@ -232,5 +231,17 @@ document.getElementById('saveSignature').onclick = function() {
       alert('Erreur réseau ou JSON: ' + err);
     });
 };
+function validateQuantity() {
+  var q = document.getElementById('quantity');
+  if (q) {
+    let v = parseInt(q.value, 10);
+    if (isNaN(v) || v < 1) {
+      q.value = 1;
+    } else {
+      q.value = v;
+    }
+  }
+  return true;
+}
 </script>
 {% endblock %}
