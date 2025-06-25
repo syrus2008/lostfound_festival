@@ -17,6 +17,8 @@ class HeadphoneLoan(db.Model):
     phone = db.Column(db.String(50), nullable=False)
     deposit_type = db.Column(db.Enum(DepositType), nullable=False)
     deposit_details = db.Column(db.String(200), nullable=True)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    deposit_amount = db.Column(db.Numeric(10, 2), nullable=True)
     loan_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
     return_date = db.Column(db.DateTime, nullable=True)
     signature = db.Column(db.Text, nullable=True)  # Image base64 de la signature

@@ -42,6 +42,8 @@ with app.app_context():
                     phone VARCHAR(50) NOT NULL,
                     deposit_type VARCHAR(20) NOT NULL,
                     deposit_details VARCHAR(200),
+                    quantity INTEGER NOT NULL DEFAULT 1,
+                    deposit_amount NUMERIC(10,2),
                     loan_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     return_date TIMESTAMP,
                     signature TEXT

@@ -20,8 +20,23 @@
           {{ form.phone(class="form-control") }}
         </div>
         <div class="col-md-3">
-          {{ form.deposit_type.label(class="form-label") }}
-          {{ form.deposit_type(class="form-select") }}
+          {{ form.deposit_type.label(class="form-label d-block") }}
+          <div class="form-check form-check-inline">
+            {{ form.deposit_type(class="form-check-input", id="depositTypeIdCard", value="id_card") }}
+            <label for="depositTypeIdCard" class="form-check-label">Carte d'identité</label>
+          </div>
+          <div class="form-check form-check-inline">
+            {{ form.deposit_type(class="form-check-input", id="depositTypeCash", value="cash") }}
+            <label for="depositTypeCash" class="form-check-label">Caution en argent</label>
+          </div>
+        </div>
+        <div class="col-md-3" id="depositAmountField" style="display:none;">
+          {{ form.deposit_amount.label(class="form-label") }}
+          {{ form.deposit_amount(class="form-control") }}
+        </div>
+        <div class="col-md-3">
+          {{ form.quantity.label(class="form-label") }}
+          {{ form.quantity(class="form-control") }}
         </div>
         <div class="col-md-6">
           {{ form.deposit_details.label(class="form-label") }}
@@ -54,7 +69,9 @@
           <th>Nom</th>
           <th>Prénom</th>
           <th>Téléphone</th>
+          <th>Quantité</th>
           <th>Caution</th>
+          <th>Montant (€)</th>
           <th>Date prêt</th>
           <th>Date retour</th>
           <th>Signature retour</th>
@@ -64,10 +81,12 @@
       <tbody>
         {% for loan in loans %}
         <tr>
+          <td>{{ loan.quantity }}</td>
           <td>{{ loan.last_name }}</td>
           <td>{{ loan.first_name }}</td>
           <td>{{ loan.phone }}</td>
           <td>{{ loan.deposit_type.value if loan.deposit_type else '' }}<br>{{ loan.deposit_details }}</td>
+          <td>{% if loan.deposit_amount %}{{ '%.2f'|format(loan.deposit_amount) }}{% endif %}</td>
           <td>{{ loan.loan_date.strftime('%d/%m/%Y %H:%M') if loan.loan_date else '' }}</td>
           <td>{{ loan.return_date.strftime('%d/%m/%Y %H:%M') if loan.return_date else '' }}</td>
           <td>
@@ -124,6 +143,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.6/dist/signature_pad.umd.min.js"></script>
 <script>
+// Affiche/masque le champ montant selon le choix de la caution
+function updateDepositAmountField() {
+  const radios = document.getElementsByName('deposit_type');
+  let show = false;
+  for (const radio of radios) {
+    if (radio.checked && radio.value === 'cash') show = true;
+  }
+  document.getElementById('depositAmountField').style.display = show ? '' : 'none';
+}
+document.querySelectorAll('input[name="deposit_type"]').forEach(el => {
+  el.addEventListener('change', updateDepositAmountField);
+});
+window.addEventListener('DOMContentLoaded', updateDepositAmountField);
+
 let currentLoanId = null;
 let signaturePad = null;
 

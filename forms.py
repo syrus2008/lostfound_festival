@@ -4,11 +4,15 @@ from wtforms.validators import DataRequired, Length, Email, Optional, EqualTo
 from flask_wtf.file import FileAllowed
 from wtforms import MultipleFileField
 
+from wtforms import RadioField, DecimalField, IntegerField
+
 class HeadphoneLoanForm(FlaskForm):
     first_name = StringField('Prénom', validators=[DataRequired(), Length(max=100)])
     last_name = StringField('Nom', validators=[DataRequired(), Length(max=100)])
     phone = StringField('Téléphone', validators=[DataRequired(), Length(max=50)])
-    deposit_type = SelectField('Type de caution', choices=[('id_card', 'Carte d\'identité'), ('cash', 'Caution en argent')], validators=[DataRequired()])
+    deposit_type = RadioField('Type de caution', choices=[('id_card', "Carte d'identité"), ('cash', 'Caution en argent')], validators=[DataRequired()])
+    deposit_amount = DecimalField('Montant de la caution (€)', places=2, validators=[Optional()])
+    quantity = IntegerField('Nombre de casques prêtés', default=1, validators=[DataRequired()])
     deposit_details = StringField('Détails de la caution', validators=[Length(max=200)])
     submit = SubmitField('Enregistrer le prêt')
 

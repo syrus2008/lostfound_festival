@@ -534,7 +534,9 @@ def headphone_loans():
             last_name=form.last_name.data,
             phone=form.phone.data,
             deposit_type=DepositType(form.deposit_type.data),
-            deposit_details=form.deposit_details.data
+            deposit_details=form.deposit_details.data,
+            quantity=form.quantity.data or 1,
+            deposit_amount=form.deposit_amount.data if form.deposit_type.data == 'cash' else None
         )
         db.session.add(loan)
         db.session.commit()
