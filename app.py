@@ -56,12 +56,14 @@ with app.app_context():
             """))
             if result.fetchone() is None:
                 conn.execute(sqlalchemy.text("ALTER TABLE headphone_loans ADD COLUMN quantity INTEGER NOT NULL DEFAULT 1;"))
+                conn.execute(sqlalchemy.text("COMMIT;"))
             # Ajoute deposit_amount si manquant
             result = conn.execute(sqlalchemy.text("""
                 SELECT column_name FROM information_schema.columns WHERE table_name='headphone_loans' AND column_name='deposit_amount'
             """))
             if result.fetchone() is None:
-                conn.execute(sqlalchemy.text("ALTER TABLE headphone_loans ADD COLUMN deposit_amount NUMERIC(10,2);") )
+                conn.execute(sqlalchemy.text("ALTER TABLE headphone_loans ADD COLUMN deposit_amount NUMERIC(10,2);"))
+                conn.execute(sqlalchemy.text("COMMIT;"))
     except Exception as e:
         import sys
         print(f"[WARN] Impossible de créer la table headphone_loans automatiquement : {e}", file=sys.stderr)
