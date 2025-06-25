@@ -28,6 +28,11 @@
               <i class="bi bi-journal-text"></i> Logs
             </a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link text-white {% if request.path.startswith(url_for('admin.helmet_rentals')) %}active{% endif %}" href="{{ url_for('admin.helmet_rentals') }}">
+              <i class="bi bi-headphones"></i> Locations casques
+            </a>
+          </li>
           
           <li class="nav-item mt-3">
             <a class="nav-link text-secondary" href="{{ url_for('main.index') }}">

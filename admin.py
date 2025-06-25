@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
 from app import db
-from models import User, ActionLog, Item, Status
+from models import User, ActionLog, Item, Status, HeadphoneLoan
+from forms import SimpleCsrfForm, HeadphoneLoanForm
 
 def admin_required(f):
     from functools import wraps
@@ -123,7 +124,46 @@ def delete_user(user_id):
         flash("Erreur de validation du formulaire.", "danger")
         return redirect(url_for('admin.user_detail', user_id=user_id))
 
+@bp_admin.route('/loans')
+@login_required
+@admin_required  
+def admin_loans():
+    loans = HeadphoneLoan.query.order_by(HeadphoneLoan.loan_date.desc()).all()
+    csrf_form = SimpleCsrfForm()
+    return render_template('admin/loans.html', loans=loans, csrf_form=csrf_form)
 
+@bp_admin.route('/helmet-rentals')
+@login_required
+@admin_required
+def helmet_rentals():
+    rentals = HeadphoneLoan.query.order_by(HeadphoneLoan.loan_date.desc()).all()
+    csrf_form = SimpleCsrfForm()
+    return render_template('admin/helmet_rentals.html', rentals=rentals, csrf_form=csrf_form)
+
+@bp_admin.route('/helmet-rentals/<int:rental_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_rental(rental_id):
+    form = SimpleCsrfForm()
+    rental = HeadphoneLoan.query.get_or_404(rental_id)
+    
+    if form.validate_on_submit():
+        # Enregistrer l'action dans les logs
+        ActionLog.query.session.add(ActionLog(
+            user_id=current_user.id, 
+            action_type='delete_rental', 
+            details=f'Suppression location casque {rental.first_name} {rental.last_name} (ID: {rental_id})'
+        ))
+        
+        # Supprimer la location
+        db.session.delete(rental)
+        db.session.commit()
+        
+        flash("Location de casque supprimée avec succès.", "success")
+    else:
+        flash("Erreur de validation du formulaire.", "danger")
+    
+    return redirect(url_for('admin.helmet_rentals'))
 
 @bp_admin.route('/logs')
 @login_required
