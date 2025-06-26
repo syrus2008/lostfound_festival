@@ -4,12 +4,12 @@
 {% block content %}
 <div class="container-fluid">
   <!-- Hamburger menu for mobile -->
-  <button class="btn btn-primary d-lg-none position-fixed top-0 start-0 m-2 zindex-tooltip" style="z-index: 1052;" type="button" aria-label="Ouvrir le menu admin" data-bs-toggle="sidebar">
+  <button class="btn btn-primary d-lg-none position-fixed top-0 start-0 m-2 zindex-tooltip" style="z-index: 1052;" type="button" aria-label="Ouvrir le menu admin" data-bs-toggle="sidebar" aria-controls="sidebarMenu" aria-expanded="false">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="row">
     <!-- Sidebar -->
-    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-block bg-dark sidebar" aria-label="Menu administratif" aria-controls="sidebarMenu" aria-expanded="false">
       <!-- Mobile close button -->
       <button type="button" class="btn-close btn-close-white d-lg-none position-absolute top-0 end-0 m-3" style="z-index:1051;" aria-label="Fermer le menu" onclick="toggleSidebar(false)"></button>
       <div class="position-sticky pt-3">
@@ -115,14 +115,16 @@
   @media (max-width: 991.98px) {
     #sidebarMenu {
       position: fixed;
-      z-index: 1040;
+      z-index: 9999;
       left: 0;
       top: 0;
       height: 100vh;
       width: 220px;
+      background: #212529;
       transform: translateX(-100%);
       transition: transform 0.3s ease-in-out;
       box-shadow: 2px 0 10px rgba(0,0,0,0.15);
+      display: block !important;
     }
     #sidebarMenu.show {
       transform: translateX(0);
@@ -132,7 +134,7 @@
       position: fixed;
       inset: 0;
       background: rgba(0,0,0,0.35);
-      z-index: 1039;
+      z-index: 9998;
     }
     .btn-close[aria-label="Fermer le menu"] {
       display: block;
