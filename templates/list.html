@@ -23,7 +23,7 @@
     </div>
   </form>
   {% if items %}
-  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4" style="overflow-x:hidden;">
     {% for group in grouped_items %}
       <div class="col position-relative" style="min-height: 240px;">
         {% set visible_group = group | selectattr('status', 'ne', Status.PENDING_DELETION) | list %}

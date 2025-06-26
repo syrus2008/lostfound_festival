@@ -1,18 +1,21 @@
 <div class="card h-100 shadow-sm border-0 rounded-4 card-hover-effect">
   {% if obj.photos and obj.photos|length > 0 %}
     <img src="{{ url_for('main.uploaded_file', filename=obj.photos[0].filename) }}"
-         class="card-img-top photo-clickable"
+         class="card-img-top photo-clickable w-100"
          style="object-fit: cover; height: 200px; cursor: zoom-in;"
          loading="lazy" alt="Photo de l'objet"
          data-bs-toggle="modal" data-bs-target="#photoModal-{{ obj.id }}">
+<style>@media (max-width: 575.98px){.card-img-top{height:120px!important;}}</style>
   {% elif obj.photo_filename %}
     <img src="{{ url_for('main.uploaded_file', filename=obj.photo_filename) }}"
-         class="card-img-top photo-clickable"
+         class="card-img-top photo-clickable w-100"
          style="object-fit: cover; height: 200px; cursor: zoom-in;"
          loading="lazy" alt="Photo de l'objet"
          data-bs-toggle="modal" data-bs-target="#photoModal-{{ obj.id }}">
+<style>@media (max-width: 575.98px){.card-img-top{height:120px!important;}}</style>
   {% else %}
-    <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+    <div class="bg-light d-flex align-items-center justify-content-center w-100" style="height: 200px;">
+<style>@media (max-width: 575.98px){.bg-light[style*='height: 200px;']{height:120px!important;}}</style>
       <span class="text-muted">Pas de photo</span>
     </div>
   {% endif %}

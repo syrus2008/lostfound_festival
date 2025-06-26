@@ -18,11 +18,14 @@
           <div class="d-flex justify-content-center">
             <div class="card shadow-sm border-0 rounded-4" style="width: 22rem;">
               {% if item.photos and item.photos|length > 0 %}
-                <img src="{{ url_for('main.uploaded_file', filename=item.photos[0].filename) }}" class="card-img-top" style="object-fit: cover; height: 220px;" alt="Photo">
+                <img src="{{ url_for('main.uploaded_file', filename=item.photos[0].filename) }}" class="card-img-top w-100" style="object-fit: cover; height: 220px;" alt="Photo">
+<style>@media (max-width: 575.98px){.card-img-top{height:140px!important;}}</style>
               {% elif item.photo_filename %}
-                <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}" class="card-img-top" style="object-fit: cover; height: 220px;" alt="Photo">
+                <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}" class="card-img-top w-100" style="object-fit: cover; height: 220px;" alt="Photo">
+<style>@media (max-width: 575.98px){.card-img-top{height:140px!important;}}</style>
               {% else %}
-                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 220px;">
+                <div class="bg-light d-flex align-items-center justify-content-center w-100" style="height: 220px;">
+<style>@media (max-width: 575.98px){.bg-light[style*='height: 220px;']{height:140px!important;}}</style>
                   <span class="text-muted">Pas de photo</span>
                 </div>
               {% endif %}

@@ -63,7 +63,8 @@
         </div>
       </div>
     </form>
-    <table class="table table-hover align-middle">
+    <div class="table-responsive">
+<table class="table table-hover align-middle">
       <thead class="table-light">
         <tr>
           <th>Nom</th>
@@ -94,7 +95,7 @@
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#signatureModal{{ loan.id }}">Retourner</button>
               <!-- Modal pour signature -->
               <div class="modal fade" id="signatureModal{{ loan.id }}" tabindex="-1" aria-labelledby="signatureModalLabel{{ loan.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-dialog-centered" style="max-width:95vw;">
                   <div class="modal-content">
                     <div class="modal-header">
                       <h5 class="modal-title" id="signatureModalLabel{{ loan.id }}">Signature de retour</h5>
@@ -114,7 +115,7 @@
               <button class="btn btn-link" data-bs-toggle="modal" data-bs-target="#signatureModal{{ loan.id }}">Voir</button>
               <!-- Modal pour voir la signature -->
               <div class="modal fade" id="signatureModal{{ loan.id }}" tabindex="-1" aria-labelledby="signatureModalLabel{{ loan.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-dialog modal-dialog-centered" style="max-width:95vw;">
                   <div class="modal-content">
                     <div class="modal-header">
                       <h5 class="modal-title" id="signatureModalLabel{{ loan.id }}">Signature de retour</h5>
@@ -146,19 +147,21 @@
         {% endfor %}
       </tbody>
     </table>
+</div> <!-- .table-responsive -->
   </div>
 </div>
 
 <!-- Modal pour signature retour -->
 <div class="modal fade" id="signatureModal" tabindex="-1" aria-labelledby="signatureModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:95vw;">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="signatureModalLabel">Signature de retour</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <canvas id="signaturePad" width="400" height="200" style="border:1px solid #ccc;"></canvas>
+        <canvas id="signaturePad" width="400" height="200" style="border:1px solid #ccc;max-width:100%;height:auto;"></canvas>
+<style>@media (max-width: 575.98px){#signaturePad{width:100%!important;height:120px!important;}}</style>
         <div class="mt-2">
           <button class="btn btn-secondary btn-sm" id="clearSignature">Effacer</button>
           <button class="btn btn-primary btn-sm" id="saveSignature">Valider</button>
