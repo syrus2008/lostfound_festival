@@ -76,7 +76,7 @@ def auth():
                     login_user(user, remember=login_form.remember.data)
                     log_action(user.id, 'login', 'Connexion utilisateur')
                     flash('Connexion réussie.', 'success')
-                    return redirect(url_for('main.list_items', status='found'))
+                    return redirect(url_for('main.index'))
                 flash('Identifiants invalides.', 'danger')
         elif 'submit_register' in request.form:
             active_tab = 'register'
