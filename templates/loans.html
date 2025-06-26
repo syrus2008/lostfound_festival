@@ -93,7 +93,7 @@
           <td>
             {% if not loan.return_date %}
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#signatureModal{{ loan.id }}">Retourner</button>
-              <!-- Modal pour signature -->>
+              <!-- Modal pour signature -->
               <div class="modal fade" id="signatureModal{{ loan.id }}" tabindex="-1" aria-labelledby="signatureModalLabel{{ loan.id }}" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered" style="max-width:95vw;">
                   <div class="modal-content">
@@ -104,8 +104,8 @@
                     <div class="modal-body text-center">
                       <canvas id="signaturePad{{ loan.id }}" width="400" height="200" style="border:1px solid #ccc;"></canvas>
                       <div class="mt-2">
-                        <button class="btn btn-secondary btn-sm" onclick="clearSignature({{ loan.id }})">Effacer</button>
-                        <button class="btn btn-primary btn-sm" onclick="saveSignature({{ loan.id }})">Valider</button>
+                        <button class="btn btn-secondary btn-sm" onclick="clearSignature(Number('{{ loan.id }}'))">Effacer</button>
+                        <button class="btn btn-primary btn-sm" onclick="saveSignature(Number('{{ loan.id }}'))">Valider</button>
                       </div>
                     </div>
                   </div>
