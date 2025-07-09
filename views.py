@@ -124,26 +124,58 @@ def redirect_lost():
 def redirect_found():
     return redirect(url_for('main.report_item'), code=301)
 
+def get_or_create_category(category_id, new_category_name):
+    """Récupère une catégorie existante ou en crée une nouvelle si un nom est fourni."""
+    if new_category_name and new_category_name.strip():
+        # Vérifier si la catégorie existe déjà (insensible à la casse)
+        existing_category = Category.query.filter(
+            db.func.lower(Category.name) == new_category_name.strip().lower()
+        ).first()
+        
+        if existing_category:
+            return existing_category.id
+            
+        # Créer une nouvelle catégorie
+        new_category = Category(name=new_category_name.strip())
+        db.session.add(new_category)
+        db.session.flush()  # Pour obtenir l'ID de la nouvelle catégorie
+        log_action(current_user.id, 'create_category', f'Nouvelle catégorie: {new_category.name}')
+        return new_category.id
+    return category_id
+
 @bp.route('/report', methods=['GET', 'POST'])
 @login_required
 def report_item():
     lost_form = ItemForm(prefix='lost')
     found_form = ItemForm(prefix='found')
+    
+    # Charger les catégories existantes
     categories = [(c.id, c.name) for c in Category.query.order_by(Category.name).all()]
-    lost_form.category.choices = categories
-    found_form.category.choices = categories
+    lost_form.category.choices = [('', 'Sélectionnez une catégorie')] + categories
+    found_form.category.choices = [('', 'Sélectionnez une catégorie')] + categories
 
     # Gestion soumission objet perdu
     if lost_form.validate_on_submit() and 'submit_lost' in request.form:
-        doublons = find_similar_items(lost_form.title.data, lost_form.category.data, 70)
+        # Gérer la création d'une nouvelle catégorie si nécessaire
+        category_id = get_or_create_category(
+            lost_form.category.data if lost_form.category.data else None,
+            request.form.get('lost-new_category')
+        )
+        
+        if not category_id:
+            flash("Veuillez sélectionner une catégorie ou en créer une nouvelle.", "lost")
+            return render_template('report.html', lost_form=lost_form, found_form=found_form)
+            
+        doublons = find_similar_items(lost_form.title.data, category_id, 70)
         if doublons:
             flash("Attention : des objets similaires existent déjà !", "lost")
+            
         item = Item(
             status=Status.LOST,
             title=lost_form.title.data,
             comments=lost_form.comments.data,
             location=lost_form.location.data,
-            category_id=lost_form.category.data,
+            category_id=category_id,
             reporter_name=lost_form.reporter_name.data,
             reporter_email=lost_form.reporter_email.data,
             reporter_phone=lost_form.reporter_phone.data
@@ -167,15 +199,26 @@ def report_item():
 
     # Gestion soumission objet trouvé
     if found_form.validate_on_submit() and 'submit_found' in request.form:
-        doublons = find_similar_items(found_form.title.data, found_form.category.data, 70)
+        # Gérer la création d'une nouvelle catégorie si nécessaire
+        category_id = get_or_create_category(
+            found_form.category.data if found_form.category.data else None,
+            request.form.get('found-new_category')
+        )
+        
+        if not category_id:
+            flash("Veuillez sélectionner une catégorie ou en créer une nouvelle.", "found")
+            return render_template('report.html', lost_form=lost_form, found_form=found_form)
+            
+        doublons = find_similar_items(found_form.title.data, category_id, 70)
         if doublons:
             flash("Attention : des objets similaires existent déjà !", "found")
+            
         item = Item(
             status=Status.FOUND,
             title=found_form.title.data,
             comments=found_form.comments.data,
             location=found_form.location.data,
-            category_id=found_form.category.data,
+            category_id=category_id,
             reporter_name=found_form.reporter_name.data,
             reporter_email=found_form.reporter_email.data,
             reporter_phone=found_form.reporter_phone.data
