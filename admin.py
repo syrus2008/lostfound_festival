@@ -261,6 +261,13 @@ def admin_logs():
     logs = query.order_by(ActionLog.timestamp.desc())\
                 .paginate(page=page, per_page=per_page, error_out=False)
     
+    # Récupération des types d'actions uniques pour le filtre
+    action_types = db.session.query(ActionLog.action_type)\
+                           .distinct()\
+                           .order_by(ActionLog.action_type)\
+                           .all()
+    action_types = [at[0] for at in action_types if at[0]]
+    
     return render_template(
         'admin/logs.html', 
         logs=logs, 
