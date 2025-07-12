@@ -106,14 +106,13 @@ $(document).ready(function() {
     let deleteMode = false;
     let currentLogId = null;
     
-    // Activer/désactiver le mode suppression avec Ctrl+Alt+Suppr
+    // Activer/désactiver le mode suppression avec Ctrl+Alt+Shift+S
     $(document).on('keydown', function(e) {
-        // Ctrl+Alt+Suppr
-        if (e.ctrlKey && e.altKey && e.key === 'Delete') {
+        // Ctrl+Alt+Shift+S
+        if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 's' || e.key === 'S')) {
             e.preventDefault();
             toggleDeleteMode();
         }
-        
         // Échap pour quitter le mode suppression
         if (deleteMode && e.key === 'Escape') {
             e.preventDefault();
