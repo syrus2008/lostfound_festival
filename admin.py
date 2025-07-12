@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app import db
 from models import User, ActionLog, Item, Status, HeadphoneLoan
 from forms import SimpleCsrfForm, HeadphoneLoanForm
+from datetime import datetime, timedelta
 
 def admin_required(f):
     from functools import wraps
@@ -260,13 +261,6 @@ def admin_logs():
     logs = query.order_by(ActionLog.timestamp.desc())\
                 .paginate(page=page, per_page=per_page, error_out=False)
     
-    # Récupération des types d'actions uniques pour le filtre
-    action_types = db.session.query(ActionLog.action_type)\
-                           .distinct()\
-                           .order_by(ActionLog.action_type)\
-                           .all()
-    action_types = [at[0] for at in action_types if at[0]]
-    
     return render_template(
         'admin/logs.html', 
         logs=logs, 
@@ -274,3 +268,33 @@ def admin_logs():
         action_type=action_type,
         action_types=action_types
     )
+
+@bp_admin.route('/logs/<int:log_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_log(log_id):
+    if not request.is_json:
+        return jsonify({'error': 'Invalid request'}), 400
+    
+    log = ActionLog.query.get_or_404(log_id)
+    
+    # Ne pas permettre de supprimer des logs de moins d'une heure
+    if datetime.utcnow() - log.timestamp < timedelta(hours=1):
+        return jsonify({
+            'success': False,
+            'message': 'Impossible de supprimer un log de moins d\'une heure'
+        }), 400
+    
+    try:
+        db.session.delete(log)
+        db.session.commit()
+        return jsonify({
+            'success': True,
+            'message': 'Log supprimé avec succès'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': f'Erreur lors de la suppression du log: {str(e)}'
+        }), 500
