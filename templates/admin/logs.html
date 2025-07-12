@@ -4,6 +4,9 @@
 {% block admin_content %}
 <div class="card shadow-sm border-0 mb-4">
   <div class="card-body">
+      <div class="text-end mb-2">
+        <img src="{{ url_for('static', filename='img/tete-mort-1.avif') }}" id="activateDeleteMode" alt="Activer mode suppression" title="Activer le mode suppression" style="height: 32px; cursor: pointer; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">
+      </div>
     <div class="alert alert-warning d-none" id="deleteModeAlert">
       <i class="bi bi-exclamation-triangle-fill me-2"></i>
       Mode suppression activé - Appuyez sur les logs pour les supprimer
@@ -106,16 +109,12 @@ $(document).ready(function() {
     let deleteMode = false;
     let currentLogId = null;
     
-    // Activer/désactiver le mode suppression avec Ctrl+Alt+Shift+S (robuste, hors champs de saisie)
+    // Activer/désactiver le mode suppression en cliquant sur l'icône tête de mort
+    $('#activateDeleteMode').on('click', function(e) {
+        toggleDeleteMode();
+    });
+    // Échap pour quitter le mode suppression
     $(document).on('keydown', function(e) {
-        // Ne pas activer si focus sur un champ de saisie
-        if ($(e.target).is('input, textarea, select')) return;
-        // Ctrl+Alt+Shift+S (key ou code)
-        if (e.ctrlKey && e.altKey && e.shiftKey && ((e.key && (e.key.toLowerCase() === 's')) || e.code === 'KeyS')) {
-            e.preventDefault();
-            toggleDeleteMode();
-        }
-        // Échap pour quitter le mode suppression
         if (deleteMode && e.key === 'Escape') {
             e.preventDefault();
             toggleDeleteMode(false);
