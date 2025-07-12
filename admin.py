@@ -232,18 +232,45 @@ def delete_rental(rental_id):
 @login_required
 @admin_required
 def admin_logs():
-    # Recherche, filtre et pagination
-    from sqlalchemy import or_
+    # Configuration de la pagination et des filtres
     page = request.args.get('page', 1, type=int)
-    per_page = 25
-    search = request.args.get('search', '', type=str).strip()
-    action_type = request.args.get('action_type', '', type=str).strip()
-    query = ActionLog.query
+    per_page = 50  # Augmenté de 25 à 50 pour plus de commodité
+    search = request.args.get('search', '').strip()
+    action_type = request.args.get('action_type', '').strip()
+    
+    # Construction de la requête de base avec jointure pour le chargement efficace
+    query = ActionLog.query.join(User, ActionLog.user_id == User.id, isouter=True)
+    
+    # Filtrage par recherche
     if search:
-        query = query.filter(or_(ActionLog.details.ilike(f'%{search}%'), ActionLog.action_type.ilike(f'%{search}%')))
+        search_term = f"%{search}%"
+        query = query.filter(
+            db.or_(
+                ActionLog.details.ilike(search_term),
+                ActionLog.action_type.ilike(search_term),
+                User.email.ilike(search_term)  # Recherche par email utilisateur
+            )
+        )
+    
+    # Filtrage par type d'action
     if action_type:
         query = query.filter(ActionLog.action_type == action_type)
-    logs = query.order_by(ActionLog.timestamp.desc()).paginate(page=page, per_page=per_page, error_out=False)
-    # Pour le filtre, récupérer tous les types d'actions distincts
-    action_types = [row[0] for row in db.session.query(ActionLog.action_type).distinct().all()]
-    return render_template('admin/logs.html', logs=logs, search=search, action_type=action_type, action_types=action_types)
+    
+    # Tri et pagination
+    logs = query.order_by(ActionLog.timestamp.desc())\
+                .paginate(page=page, per_page=per_page, error_out=False)
+    
+    # Récupération des types d'actions uniques pour le filtre
+    action_types = db.session.query(ActionLog.action_type)\
+                           .distinct()\
+                           .order_by(ActionLog.action_type)\
+                           .all()
+    action_types = [at[0] for at in action_types if at[0]]
+    
+    return render_template(
+        'admin/logs.html', 
+        logs=logs, 
+        search=search,
+        action_type=action_type,
+        action_types=action_types
+    )
