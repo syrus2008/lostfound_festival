@@ -280,13 +280,23 @@ def admin_logs():
 @login_required
 @admin_required
 def delete_log(log_id):
+    print(f"[DEBUG] Appel de delete_log pour log_id={log_id}")
+    print(f"[DEBUG] Méthode: {request.method}, is_json: {request.is_json}")
+    try:
+        print(f"[DEBUG] Données reçues: {request.get_json()}")
+    except Exception as ex:
+        print(f"[DEBUG] Impossible de parser le JSON: {ex}")
     if not request.is_json:
+        print("[DEBUG] Requête non JSON, rejetée.")
         return jsonify({'error': 'Invalid request'}), 400
     
     log = ActionLog.query.get_or_404(log_id)
-    
+    print(f"[DEBUG] Log trouvé: id={log.id}, timestamp={log.timestamp}")
     # Ne pas permettre de supprimer des logs de moins d'une heure
-    if datetime.utcnow() - log.timestamp < timedelta(hours=1):
+    diff = datetime.utcnow() - log.timestamp
+    print(f"[DEBUG] Différence UTCnow - log.timestamp: {diff}")
+    if diff < timedelta(hours=1):
+        print("[DEBUG] Log trop récent pour être supprimé.")
         return jsonify({
             'success': False,
             'message': 'Impossible de supprimer un log de moins d\'une heure'
@@ -295,12 +305,14 @@ def delete_log(log_id):
     try:
         db.session.delete(log)
         db.session.commit()
+        print("[DEBUG] Log supprimé avec succès.")
         return jsonify({
             'success': True,
             'message': 'Log supprimé avec succès'
         })
     except Exception as e:
         db.session.rollback()
+        print(f"[DEBUG] Exception lors de la suppression: {str(e)}")
         return jsonify({
             'success': False,
             'message': f'Erreur lors de la suppression du log: {str(e)}'
