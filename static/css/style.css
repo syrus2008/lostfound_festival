@@ -1,0 +1,65 @@
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+.custom-navbar {
+    border-bottom: 1.5px solid #e1e7ef;
+    background: #fff;
+}
+.custom-navbar .navbar-brand {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.superposed-card {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.09) !important;
+  transition: box-shadow 0.2s;
+}
+.superposed-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.20) !important;
+  z-index: 20;
+}
+
+.navbar .nav-link {
+    border-radius: 20px;
+    transition: background 0.2s, color 0.2s;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+.navbar .nav-link.active, .navbar .nav-link:hover {
+    background: #e7f1ff;
+    color: #0d6efd !important;
+}
+
+.footer {
+    background: #f8f9fa;
+    border-top: 1px solid #e1e7ef;
+    color: #888;
+}
+
+.btn, .btn-primary, .btn-success, .btn-secondary {
+    border-radius: 1.5rem;
+    font-weight: 500;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.card {
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+img.img-thumbnail {
+    border-radius: 0.7rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    transition: transform 0.2s;
+}
+img.img-thumbnail:hover {
+    transform: scale(1.08);
+    z-index: 2;
+}
+
+.card {
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}

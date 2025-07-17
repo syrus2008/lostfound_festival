@@ -1,0 +1,53 @@
+<div class="card h-100 shadow-sm border-0 rounded-4 card-hover-effect">
+  {% if obj.photos and obj.photos|length > 0 %}
+    <img src="{{ url_for('main.uploaded_file', filename=obj.photos[0].filename) }}"
+         class="card-img-top photo-clickable w-100"
+         style="object-fit: cover; height: 200px; cursor: zoom-in;"
+         loading="lazy" alt="Photo de l'objet"
+         data-bs-toggle="modal" data-bs-target="#photoModal-{{ obj.id }}">
+<style>@media (max-width: 575.98px){.card-img-top{height:120px!important;}}</style>
+  {% elif obj.photo_filename %}
+    <img src="{{ url_for('main.uploaded_file', filename=obj.photo_filename) }}"
+         class="card-img-top photo-clickable w-100"
+         style="object-fit: cover; height: 200px; cursor: zoom-in;"
+         loading="lazy" alt="Photo de l'objet"
+         data-bs-toggle="modal" data-bs-target="#photoModal-{{ obj.id }}">
+<style>@media (max-width: 575.98px){.card-img-top{height:120px!important;}}</style>
+  {% else %}
+    <div class="bg-light d-flex align-items-center justify-content-center w-100" style="height: 200px;">
+<style>@media (max-width: 575.98px){.bg-light[style*='height: 200px;']{height:120px!important;}}</style>
+      <span class="text-muted">Pas de photo</span>
+    </div>
+  {% endif %}
+  <div class="card-body d-flex flex-column">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h5 class="card-title fw-bold mb-0">{{ obj.title }}</h5>
+      <span class="badge {% if obj.status.name == 'LOST' %}bg-danger{% elif obj.status.name == 'FOUND' %}bg-primary{% elif obj.status.name == 'RETURNED' %}bg-success{% else %}bg-secondary{% endif %}">
+        {{ obj.status.name.capitalize() }}
+      </span>
+    </div>
+    <p class="card-text mb-1"><i class="bi bi-tag"></i> {{ obj.category.name if obj.category else '—' }}</p>
+    <p class="card-text mb-1"><i class="bi bi-geo-alt"></i> {{ obj.location or '—' }}</p>
+    <p class="card-text mb-2"><i class="bi bi-calendar-event"></i> {{ obj.date_reported.strftime('%d/%m/%Y') }}</p>
+    <a href="{{ url_for('main.detail_item', item_id=obj.id) }}" class="btn btn-outline-primary mt-auto">Voir détail</a>
+  </div>
+</div>
+
+{# Modal Bootstrap pour aperçu de la photo #}
+<div class="modal fade" id="photoModal-{{ obj.id }}" tabindex="-1" aria-labelledby="photoModalLabel-{{ obj.id }}" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content bg-dark">
+      <div class="modal-header border-0">
+        <h5 class="modal-title text-white" id="photoModalLabel-{{ obj.id }}">Aperçu de la photo</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+      </div>
+      <div class="modal-body text-center">
+        {% if obj.photos and obj.photos|length > 0 %}
+          <img src="{{ url_for('main.uploaded_file', filename=obj.photos[0].filename) }}" class="img-fluid rounded shadow" style="max-height: 70vh;" alt="Photo de l'objet">
+        {% elif obj.photo_filename %}
+          <img src="{{ url_for('main.uploaded_file', filename=obj.photo_filename) }}" class="img-fluid rounded shadow" style="max-height: 70vh;" alt="Photo de l'objet">
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
