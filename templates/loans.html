@@ -260,43 +260,49 @@ function openSignatureModal(loanId) {
   }
 }
 
-document.getElementById('clearSignature').onclick = function() {
-  if (signaturePad) signaturePad.clear();
-};
+var clearBtn = document.getElementById('clearSignature');
+if (clearBtn) {
+    clearBtn.onclick = function() {
+        if (signaturePad) signaturePad.clear();
+    };
+}
 
-document.getElementById('saveSignature').onclick = function() {
-  if (!signaturePad || signaturePad.isEmpty()) {
-    alert('Merci de signer avant de valider.');
-    return;
-  }
-  const dataUrl = signaturePad.toDataURL();
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-  fetch(`/loans/${currentLoanId}/return`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken || ''
-    },
-    body: JSON.stringify({ signature: dataUrl })
-  })
-    .then(async resp => {
-      let data;
-      try {
-        data = await resp.json();
-      } catch (e) {
-        alert('Erreur serveur: réponse non conforme (pas du JSON).');
-        return;
-      }
-      if (resp.ok && data.success) {
-        location.reload();
-      } else {
-        alert('Erreur: ' + (data && data.error ? data.error : 'Impossible de sauvegarder la signature.'));
-      }
-    })
-    .catch(err => {
-      alert('Erreur réseau ou JSON: ' + err);
-    });
-};
+var saveBtn = document.getElementById('saveSignature');
+if (saveBtn) {
+    saveBtn.onclick = function() {
+        if (!signaturePad || signaturePad.isEmpty()) {
+            alert('Merci de signer avant de valider.');
+            return;
+        }
+        const dataUrl = signaturePad.toDataURL();
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        fetch(`/loans/${currentLoanId}/return`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken || ''
+            },
+            body: JSON.stringify({ signature: dataUrl })
+        })
+        .then(async resp => {
+            let data;
+            try {
+                data = await resp.json();
+            } catch (e) {
+                alert('Erreur serveur: réponse non conforme (pas du JSON).');
+                return;
+            }
+            if (resp.ok && data.success) {
+                location.reload();
+            } else {
+                alert('Erreur: ' + (data && data.error ? data.error : 'Impossible de sauvegarder la signature.'));
+            }
+        })
+        .catch(err => {
+            alert('Erreur réseau ou JSON: ' + err);
+        });
+    };
+}
 function validateQuantity() {
   var q = document.getElementById('quantity');
   if (q) {
