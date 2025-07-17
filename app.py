@@ -6,9 +6,33 @@ from flask_login import LoginManager
 import sqlalchemy
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'change_this_in_prod')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://user:pass@localhost:5432/lostfound')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Sécurité : forcer la présence de secrets en production
+if not app.config['SECRET_KEY'] or app.config['SECRET_KEY'] == 'change_this_in_prod':
+    raise RuntimeError('SECRET_KEY doit être défini dans les variables d\'environnement !')
+if not app.config['SQLALCHEMY_DATABASE_URI'] or 'user:pass@localhost' in app.config['SQLALCHEMY_DATABASE_URI']:
+    raise RuntimeError('DATABASE_URL PostgreSQL doit être défini dans les variables d\'environnement Railway !')
+
+# Cookies de session sécurisés
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+
+# Headers HTTP de sécurité
+@app.after_request
+def set_security_headers(response):
+    response.headers['Strict-Transport-Security'] = 'max-age=63072000; includeSubDomains; preload'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'geolocation=()'
+    response.headers['Content-Security-Policy'] = (
+        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self';"
+    )
+    return response
 
 # Upload configuration
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))

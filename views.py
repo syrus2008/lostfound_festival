@@ -226,10 +226,11 @@ def report_item():
         db.session.add(item)
         db.session.flush()  # On s'assure que item.id est disponible
         if found_form.photos.data:
-            from models import ItemPhoto
+            import uuid
             for f in found_form.photos.data:
                 if f and allowed_file(f.filename):
-                    filename = secure_filename(f.filename)
+                    ext = os.path.splitext(secure_filename(f.filename))[1]
+                    filename = f"{uuid.uuid4().hex}{ext}"
                     chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                     f.save(chemin)
                     photo = ItemPhoto(item_id=item.id, filename=filename)
@@ -447,9 +448,11 @@ def edit_item(item_id):
         from werkzeug.datastructures import FileStorage
         from models import ItemPhoto
         if form.photos.data:
+            import uuid
             for f in form.photos.data:
                 if f and allowed_file(f.filename):
-                    filename = secure_filename(f.filename)
+                    ext = os.path.splitext(secure_filename(f.filename))[1]
+                    filename = f"{uuid.uuid4().hex}{ext}"
                     chemin = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
                     f.save(chemin)
                     photo = ItemPhoto(item_id=item.id, filename=filename)
