@@ -129,7 +129,7 @@
     {{ delete_form.hidden_tag() }}
     <div class="mb-2">
       <label for="delete_password" class="form-label text-danger"><i class="bi bi-exclamation-triangle"></i> Mot de passe suppression :</label>
-      {{ delete_form.delete_password(class="form-control", placeholder="Mot de passe", autocomplete="off") }}
+      {{ delete_form.delete_password(class="form-control", placeholder="Mot de passe", autocomplete="current-password", id="delete_password") }}
       {% if delete_form.delete_password.errors %}
         <div class="text-danger small">{{ delete_form.delete_password.errors[0] }}</div>
       {% endif %}
