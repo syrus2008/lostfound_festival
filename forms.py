@@ -6,6 +6,8 @@ from wtforms import MultipleFileField
 
 from wtforms import RadioField, DecimalField, IntegerField
 
+from flask_wtf.file import FileField, FileAllowed, FileRequired
+
 class HeadphoneLoanForm(FlaskForm):
     first_name = StringField('Prénom', validators=[DataRequired(), Length(max=100)])
     last_name = StringField('Nom', validators=[DataRequired(), Length(max=100)])
@@ -14,6 +16,7 @@ class HeadphoneLoanForm(FlaskForm):
     deposit_amount = DecimalField('Montant de la caution (€)', places=2, validators=[Optional()])
     quantity = IntegerField('Nombre de casques prêtés', default=1, validators=[DataRequired()])
     deposit_details = StringField('Détails de la caution', validators=[Length(max=200)])
+    id_card_photo = FileField("Photo de la carte d'identité", validators=[FileAllowed(['jpg', 'jpeg', 'png'], "Images uniquement")])
     submit = SubmitField('Enregistrer le prêt')
 
 class SimpleCsrfForm(FlaskForm):

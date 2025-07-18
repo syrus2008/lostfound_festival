@@ -27,6 +27,7 @@ class HeadphoneLoan(db.Model):
     loan_date = db.Column(db.DateTime, nullable=False, default=db.func.now())
     return_date = db.Column(db.DateTime, nullable=True)
     signature = db.Column(db.Text, nullable=True)  # Image base64 de la signature
+    id_card_photo = db.Column(db.Text, nullable=True)  # Image base64 de la CI
     status = db.Column(db.Enum(LoanStatus), nullable=False, default=LoanStatus.ACTIVE, index=True)
     previous_status = db.Column(db.Enum(LoanStatus), nullable=True)
 

@@ -14,8 +14,24 @@ from forms import ItemForm, ClaimForm, ConfirmReturnForm, MatchForm, LoginForm, 
 from flask_login import login_user, logout_user, login_required, current_user
 from models import User, ActionLog, HeadphoneLoan, DepositType
 from forms import HeadphoneLoanForm
+from flask import jsonify
+import os
+from ocr_utils import extract_id_card_data
 
 bp = Blueprint('main', __name__)
+
+@bp.route('/ocr_id_card', methods=['POST'])
+def ocr_id_card():
+    data = request.get_json()
+    image_b64 = data.get('image_b64')
+    if not image_b64:
+        return jsonify({'error': 'Aucune image transmise'}), 400
+    # Optionally: credentials_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
+    try:
+        result = extract_id_card_data(image_b64)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 def allowed_file(filename):
     allowed_ext = {'png', 'jpg', 'jpeg'}
@@ -577,6 +593,13 @@ def headphone_loans():
     from models import LoanStatus
     loans = query.filter(HeadphoneLoan.status != LoanStatus.PENDING_DELETION).order_by(HeadphoneLoan.loan_date.desc()).all()
     if form.validate_on_submit():
+        import base64
+        id_card_photo_b64 = None
+        if form.deposit_type.data == 'id_card' and 'id_card_photo' in request.files:
+            file = request.files['id_card_photo']
+            if file and file.filename:
+                img_bytes = file.read()
+                id_card_photo_b64 = 'data:' + file.mimetype + ';base64,' + base64.b64encode(img_bytes).decode('utf-8')
         loan = HeadphoneLoan(
             first_name=form.first_name.data,
             last_name=form.last_name.data,
@@ -584,7 +607,8 @@ def headphone_loans():
             deposit_type=DepositType(form.deposit_type.data),
             deposit_details=form.deposit_details.data,
             quantity=form.quantity.data or 1,
-            deposit_amount=form.deposit_amount.data if form.deposit_type.data == 'cash' else None
+            deposit_amount=form.deposit_amount.data if form.deposit_type.data == 'cash' else None,
+            id_card_photo=id_card_photo_b64
         )
         db.session.add(loan)
         db.session.commit()

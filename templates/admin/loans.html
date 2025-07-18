@@ -25,9 +25,14 @@
           {{ form.deposit_type(class="form-select") }}
         </div>
         <div class="col-md-6">
-          {{ form.deposit_details.label(class="form-label") }}
-          {{ form.deposit_details(class="form-control") }}
-        </div>
+  {{ form.deposit_details.label(class="form-label") }}
+  {{ form.deposit_details(class="form-control") }}
+</div>
+<div class="col-md-6" id="id-card-photo-field" style="display:none;">
+  {{ form.id_card_photo.label(class="form-label") }}
+  {{ form.id_card_photo(class="form-control", accept="image/*", capture="environment", onchange="previewIdCardPhoto(event)") }}
+  <div id="id-card-photo-preview" class="mt-2"></div>
+</div>
         <div class="col-md-12">
           {{ form.submit(class="btn btn-success mt-2") }}
         </div>
@@ -165,5 +170,62 @@ function saveSignature() {
     }
   });
 }
+function toggleIdCardPhotoField() {
+  const depositType = document.querySelector('input[name="deposit_type"]:checked');
+  const field = document.getElementById('id-card-photo-field');
+  if (depositType && depositType.value === 'id_card') {
+    field.style.display = '';
+  } else {
+    field.style.display = 'none';
+    document.getElementById('id-card-photo-preview').innerHTML = '';
+    const input = document.querySelector('input[name="id_card_photo"]');
+    if (input) input.value = '';
+  }
+}
+
+function previewIdCardPhoto(event) {
+  const preview = document.getElementById('id-card-photo-preview');
+  preview.innerHTML = '';
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      preview.innerHTML = `<img src="${e.target.result}" alt="Prévisualisation" style="max-width:180px; border:1px solid #ccc; background:#fff;"/>`;
+      // Appel OCR AJAX
+      fetch('/ocr_id_card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_b64: e.target.result })
+      })
+      .then(resp => resp.json())
+      .then(data => {
+        if (data.error) {
+          preview.innerHTML += `<div class='text-danger mt-2'>Erreur OCR : ${data.error}</div>`;
+        } else {
+          if (data.first_name) {
+            document.querySelector('input[name="first_name"]').value = data.first_name;
+          }
+          if (data.last_name) {
+            document.querySelector('input[name="last_name"]').value = data.last_name;
+          }
+          // Affiche debug si besoin
+          if (data.raw_text) {
+            preview.innerHTML += `<details class='mt-2'><summary>Texte brut OCR</summary><pre style='font-size:12px;'>${data.raw_text}</pre></details>`;
+          }
+        }
+      })
+      .catch(err => {
+        preview.innerHTML += `<div class='text-danger mt-2'>Erreur réseau OCR</div>`;
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const depositTypeInputs = document.querySelectorAll('input[name="deposit_type"]');
+  depositTypeInputs.forEach(input => input.addEventListener('change', toggleIdCardPhotoField));
+  toggleIdCardPhotoField();
+});
 </script>
 {% endblock %}
