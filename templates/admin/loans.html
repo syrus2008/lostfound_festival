@@ -229,8 +229,14 @@ function previewIdCardPhoto(event) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // Pour RadioField (input radio)
   const depositTypeInputs = document.querySelectorAll('input[name="deposit_type"]');
   depositTypeInputs.forEach(input => input.addEventListener('change', toggleIdCardPhotoField));
+  // Pour SelectField (si jamais le champ est un select)
+  const depositTypeSelect = document.querySelector('select[name="deposit_type"]');
+  if (depositTypeSelect) {
+    depositTypeSelect.addEventListener('change', toggleIdCardPhotoField);
+  }
   toggleIdCardPhotoField();
 });
 </script>
