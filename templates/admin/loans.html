@@ -30,7 +30,13 @@
 </div>
 <div class="col-md-6" id="id-card-photo-field" style="display:none;">
   {{ form.id_card_photo.label(class="form-label") }}
-  {{ form.id_card_photo(class="form-control", accept="image/*", capture="environment", onchange="previewIdCardPhoto(event)") }}
+  <div class="input-group">
+    {{ form.id_card_photo(class="form-control d-none", id="id-card-photo-input", accept="image/*", capture="environment", onchange="previewIdCardPhoto(event)") }}
+    <button type="button" class="btn btn-primary" onclick="document.getElementById('id-card-photo-input').click();">
+      Prendre une photo / Choisir une image
+    </button>
+  </div>
+  <small class="form-text text-muted">Sur mobile, ce bouton ouvre la caméra.</small>
   <div id="id-card-photo-preview" class="mt-2"></div>
 </div>
         <div class="col-md-12">
