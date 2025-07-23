@@ -165,6 +165,33 @@
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.6/dist/signature_pad.umd.min.js"></script>
 <script>
+// Fonction pour afficher des alertes stylisées
+function showAlert(message, type = 'info') {
+  // Créer l'élément d'alerte
+  const alertDiv = document.createElement('div');
+  alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+  alertDiv.role = 'alert';
+  alertDiv.style.position = 'fixed';
+  alertDiv.style.top = '20px';
+  alertDiv.style.right = '20px';
+  alertDiv.style.zIndex = '9999';
+  alertDiv.style.minWidth = '300px';
+  alertDiv.style.maxWidth = '500px';
+  alertDiv.innerHTML = `
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  `;
+  
+  // Ajouter l'alerte au document
+  document.body.appendChild(alertDiv);
+  
+  // Supprimer automatiquement après 5 secondes
+  setTimeout(() => {
+    const bsAlert = new bootstrap.Alert(alertDiv);
+    bsAlert.close();
+  }, 5000);
+}
+
 // Gestion signature dynamique par prêt
 const signaturePads = {};
 function initSignaturePad(loanId) {
@@ -179,34 +206,63 @@ function clearSignature(loanId) {
 function saveSignature(loanId) {
   const pad = signaturePads[loanId];
   if (!pad || pad.isEmpty()) {
-    alert('Merci de signer avant de valider.');
+    showAlert('Merci de signer avant de valider.', 'warning');
     return;
   }
+
   const dataUrl = pad.toDataURL();
   const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+  
+  if (!csrfToken) {
+    showAlert('Erreur de sécurité. Veuillez recharger la page.', 'danger');
+    return;
+  }
+
+  // Afficher un indicateur de chargement
+  const button = document.querySelector(`#signatureModal${loanId} .btn-primary`);
+  const originalText = button.innerHTML;
+  button.disabled = true;
+  button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Traitement...';
+
   fetch(`/loans/${loanId}/return`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-CSRFToken': csrfToken || ''
+      'X-CSRFToken': csrfToken
     },
     body: JSON.stringify({ signature: dataUrl })
   })
-    .then(async resp => {
-      let data;
-      try { data = await resp.json(); } catch (e) {
-        alert('Erreur serveur: réponse non conforme (pas du JSON).');
-        return;
-      }
-      if (resp.ok && data.success) {
-        location.reload();
-      } else {
-        alert('Erreur: ' + (data && data.error ? data.error : 'Impossible de sauvegarder la signature.'));
-      }
-    })
-    .catch(err => {
-      alert('Erreur réseau ou JSON: ' + err);
-    });
+  .then(async response => {
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'Erreur lors de la sauvegarde de la signature');
+    }
+    return data;
+  })
+  .then(data => {
+    if (data.success) {
+      showAlert('Signature enregistrée avec succès !', 'success');
+      // Fermer le modal après un court délai
+      setTimeout(() => {
+        const modal = bootstrap.Modal.getInstance(document.getElementById(`signatureModal${loanId}`));
+        modal.hide();
+        // Recharger la page pour mettre à jour l'état
+        window.location.reload();
+      }, 1500);
+    } else {
+      throw new Error(data.error || 'Erreur inconnue');
+    }
+  })
+  .catch(error => {
+    console.error('Erreur:', error);
+    showAlert(error.message || 'Une erreur est survenue', 'danger');
+  })
+  .finally(() => {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = originalText;
+    }
+  });
 }
 // Bootstrap : initialisation du pad à l’ouverture du modal
 window.addEventListener('DOMContentLoaded', function() {

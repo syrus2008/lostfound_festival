@@ -648,18 +648,25 @@ def request_loan_deletion(loan_id):
 @bp.route('/loans/<int:loan_id>/return', methods=['POST'])
 @login_required
 def return_headphone_loan(loan_id):
-    from flask import request
-    loan = HeadphoneLoan.query.get_or_404(loan_id)
-    from flask import jsonify
-    data = request.get_json(silent=True)
-    if not data or 'signature' not in data:
-        return jsonify({'success': False, 'error': 'Signature manquante'}), 400
-    signature = data.get('signature')
-    from datetime import datetime
-    loan.signature = signature
-    loan.return_date = datetime.utcnow()
-    db.session.commit()
-    return {'success': True}
+    try:
+        loan = HeadphoneLoan.query.get_or_404(loan_id)
+        data = request.get_json(silent=True) or {}
+        
+        if 'signature' not in data:
+            return jsonify({'success': False, 'error': 'Signature manquante'}), 400
+            
+        loan.signature = data['signature']
+        loan.return_date = datetime.utcnow()
+        loan.status = 'returned'
+        db.session.commit()
+        
+        log_action(current_user.id, 'headphone_returned', f'Casque {loan.id} rendu avec succès')
+        return jsonify({'success': True, 'message': 'Casque marqué comme rendu avec succès'})
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Erreur lors du retour du casque {loan_id}: {str(e)}", exc_info=True)
+        return jsonify({'success': False, 'error': 'Une erreur est survenue lors du traitement de la demande'}), 500
 
 # ───────────────────────────────────────────────────────────────────────────────
 # Routes de correspondance globale Lost↔Found (nouvelles)
