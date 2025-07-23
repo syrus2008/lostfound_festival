@@ -106,18 +106,24 @@
             {% if not loan.return_date %}
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#signatureModal{{ loan.id }}">Retourner</button>
               <!-- Modal pour signature -->
-              <div class="modal fade" id="signatureModal{{ loan.id }}" tabindex="-1" aria-labelledby="signatureModalLabel{{ loan.id }}" aria-hidden="true">
+              <div class="modal fade" id="signatureModal{{ loan.id }}" tabindex="-1" aria-labelledby="signatureModalLabel{{ loan.id }}" aria-hidden="true" style="z-index: 9999 !important;">
                 <div class="modal-dialog modal-dialog-centered" style="max-width:95vw;">
                   <div class="modal-content">
                     <div class="modal-header">
                       <h5 class="modal-title" id="signatureModalLabel{{ loan.id }}">Signature de retour</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                     </div>
                     <div class="modal-body text-center">
-                      <canvas id="signaturePad{{ loan.id }}" width="400" height="200" style="border:1px solid #ccc;"></canvas>
-                      <div class="mt-2">
-                        <button class="btn btn-secondary btn-sm" onclick="clearSignature(Number('{{ loan.id }}'))">Effacer</button>
-                        <button class="btn btn-primary btn-sm" onclick="saveSignature(Number('{{ loan.id }}'))">Valider</button>
+                      <div style="position: relative; width: 100%; height: 200px; margin: 0 auto; touch-action: none;">
+                        <canvas id="signaturePad{{ loan.id }}" width="400" height="200" style="border:1px solid #ccc; background-color: white; touch-action: none;"></canvas>
+                      </div>
+                      <div class="mt-3">
+                        <button type="button" class="btn btn-secondary btn-sm me-2" onclick="clearSignature(Number('{{ loan.id }}'))">
+                          <i class="fas fa-eraser me-1"></i> Effacer
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="saveSignature(Number('{{ loan.id }}'))">
+                          <i class="fas fa-check me-1"></i> Valider
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -163,6 +169,58 @@
   </div>
 </div>
 
+<style>
+  /* Styles pour le modal de signature */
+  .modal-backdrop {
+    z-index: 9998 !important;
+  }
+  
+  .modal {
+    z-index: 9999 !important;
+  }
+  
+  /* Désactiver les événements de défilement sur le canvas de signature */
+  .signature-pad-container {
+    touch-action: none;
+    -ms-touch-action: none;
+  }
+  
+  /* S'assurer que le canvas est bien positionné et réactif */
+  .signature-pad-canvas {
+    display: block;
+    width: 100%;
+    height: 200px;
+    touch-action: none;
+  }
+  
+  /* Style pour les boutons du modal de signature */
+  .signature-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  /* Style pour le conteneur du canvas */
+  .signature-wrapper {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    margin: 0 auto;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  /* Style pour le message d'instruction */
+  .signature-instruction {
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.6/dist/signature_pad.umd.min.js"></script>
 <script>
 // Fonction pour afficher des alertes stylisées
@@ -197,7 +255,35 @@ const signaturePads = {};
 function initSignaturePad(loanId) {
   const canvas = document.getElementById('signaturePad' + loanId);
   if (canvas && !signaturePads[loanId]) {
-    signaturePads[loanId] = new SignaturePad(canvas);
+    // Redimensionner le canevas pour qu'il corresponde à sa taille d'affichage
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    canvas.width = canvas.offsetWidth * ratio;
+    canvas.height = canvas.offsetHeight * ratio;
+    canvas.getContext('2d').scale(ratio, ratio);
+    
+    signaturePads[loanId] = new SignaturePad(canvas, {
+      backgroundColor: 'rgba(255, 255, 255, 0)', // Fond transparent
+      penColor: 'rgb(0, 0, 0)'
+    });
+    
+    // Ajuster le canvas au redimensionnement de la fenêtre
+    function handleResize() {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio;
+      canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext('2d').scale(ratio, ratio);
+      signaturePads[loanId].clear(); // Effacer la signature après le redimensionnement
+    }
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Nettoyer l'écouteur d'événement lorsque le modal est fermé
+    const modal = document.getElementById('signatureModal' + loanId);
+    if (modal) {
+      modal.addEventListener('hidden.bs.modal', function() {
+        window.removeEventListener('resize', handleResize);
+      });
+    }
   }
 }
 function clearSignature(loanId) {
