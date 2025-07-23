@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block content %}
+
+  <h2 class="mb-4">Paires potentielles Lost ↔ Found</h2>
+
+  {# Barre de filtrage du seuil #}
+  <form class="row g-3 mb-4" method="get" action="{{ url_for('main.list_matches') }}">
+    <div class="col-md-2">
+      <label class="form-label">Seuil similarité (%)</label>
+      <input type="number" name="threshold" class="form-control" min="0" max="100" value="{{ threshold }}">
+    </div>
+    <div class="col-md-2 align-self-end">
+      <button type="submit" class="btn btn-primary">Appliquer</button>
+    </div>
+  </form>
+
+  {% if pairs %}
+    <div class="table-responsive" style="overflow-x:auto;">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+             <th scope="col">Photo (Lost)</th>
+            <th scope="col">Lost ID</th>
+            <th scope="col">Titre (Lost)</th>
+            <th scope="col">Photo (Found)</th>
+            <th scope="col">Found ID</th>
+            <th scope="col">Titre (Found)</th>
+            <th scope="col">Catégorie</th>
+            <th scope="col">Score</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pair in pairs %}
+            <tr>
+              <td>
+                {% if pair.lost.photos and pair.lost.photos|length > 0 %}
+                  <img src="{{ url_for('main.uploaded_file', filename=pair.lost.photos[0].filename) }}" alt="Photo Lost" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                {% elif pair.lost.photo_filename %}
+                  <img src="{{ url_for('main.uploaded_file', filename=pair.lost.photo_filename) }}" alt="Photo Lost" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                {% else %}
+                  <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="width: 60px; height: 60px; border-radius: 0.375rem;">—</div>
+                {% endif %}
+              </td>
+              <td>{{ pair.lost.id }}</td>
+              <td>
+                {{ pair.lost.title }}
+                {% if pair.is_validated %}
+                  <span class="badge bg-success ms-2">✔ Match validé</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if pair.found.photos and pair.found.photos|length > 0 %}
+                  <img src="{{ url_for('main.uploaded_file', filename=pair.found.photos[0].filename) }}" alt="Photo Found" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                {% elif pair.found.photo_filename %}
+                  <img src="{{ url_for('main.uploaded_file', filename=pair.found.photo_filename) }}" alt="Photo Found" class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
+                {% else %}
+                  <div class="bg-light d-flex align-items-center justify-content-center text-muted" style="width: 60px; height: 60px; border-radius: 0.375rem;">—</div>
+                {% endif %}
+              </td>
+              <td>{{ pair.found.id }}</td>
+              <td>
+                {{ pair.found.title }}
+                {% if pair.is_validated %}
+                  <span class="badge bg-success ms-2">✔ Match validé</span>
+                {% endif %}
+              </td>
+              <td>{{ pair.lost.category.name if pair.lost.category else '—' }}</td>
+              <td>{{ pair.score }}%</td>
+              <td>
+                {% if not pair.is_validated %}
+                  <form method="post" action="{{ url_for('main.confirm_match') }}" style="display:inline-block;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="lost_id" value="{{ pair.lost.id }}">
+                    <input type="hidden" name="found_id" value="{{ pair.found.id }}">
+                    <button type="submit" class="btn btn-sm btn-success">Valider</button>
+                    <a href="{{ url_for('main.list_matches') }}" class="btn btn-sm btn-secondary">Ignorer</a>
+                  </form>
+                {% else %}
+                  <span class="text-muted">Correspondance déjà validée</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-muted">Aucune paire potentielle supérieure au seuil {{ threshold }} %.</p>
+  {% endif %}
+
+{% endblock %}

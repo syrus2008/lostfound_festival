@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="text-center mt-5 mb-5">
+  <span class="d-inline-block mb-3" style="font-size: 3.5rem; color: #0d6efd;">
+    <i class="bi bi-search-heart"></i>
+  </span>
+  <h1 class="display-4 fw-bold mb-3">Bienvenue sur Lost &amp; Found Festival</h1>
+  <p class="lead mb-4">La plateforme simple et rapide pour signaler, retrouver et restituer vos objets perdus ou trouvés lors du festival.</p>
+  <a href="/report" class="btn btn-primary btn-lg px-4 shadow-sm">Signaler un objet</a>
+</div>
+  {% if latest_found_items and latest_found_items|length > 0 %}
+  <div class="container mb-5">
+    <h3 class="mb-3 text-center"><i class="bi bi-stars text-primary"></i> Derniers objets trouvés</h3>
+    <div id="foundCarousel" class="carousel slide" data-bs-ride="carousel">
+      <div class="carousel-inner">
+        {% for item in latest_found_items %}
+        <div class="carousel-item {% if loop.first %}active{% endif %}">
+          <div class="d-flex justify-content-center">
+            <div class="card shadow-sm border-0 rounded-4" style="width: 22rem;">
+              {% if item.photos and item.photos|length > 0 %}
+                <img src="{{ url_for('main.uploaded_file', filename=item.photos[0].filename) }}" class="card-img-top w-100" style="object-fit: cover; height: 220px;" alt="Photo">
+<style>@media (max-width: 575.98px){.card-img-top{height:140px!important;}}</style>
+              {% elif item.photo_filename %}
+                <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}" class="card-img-top w-100" style="object-fit: cover; height: 220px;" alt="Photo">
+<style>@media (max-width: 575.98px){.card-img-top{height:140px!important;}}</style>
+              {% else %}
+                <div class="bg-light d-flex align-items-center justify-content-center w-100" style="height: 220px;">
+<style>@media (max-width: 575.98px){.bg-light[style*='height: 220px;']{height:140px!important;}}</style>
+                  <span class="text-muted">Pas de photo</span>
+                </div>
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title fw-bold mb-2"><i class="bi bi-box-seam text-primary"></i> {{ item.title }}</h5>
+                <p class="mb-1"><i class="bi bi-tag text-secondary"></i> <strong>Catégorie :</strong> {{ item.category.name if item.category else '—' }}</p>
+                <p class="mb-1"><i class="bi bi-calendar-event text-info"></i> <strong>Date :</strong> {{ item.date_reported.strftime('%d/%m/%Y') }}</p>
+                <a href="{{ url_for('main.detail_item', item_id=item.id) }}" class="btn btn-outline-primary btn-sm mt-2">Voir détail</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#foundCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Précédent</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#foundCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Suivant</span>
+      </button>
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}

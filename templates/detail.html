@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+  <div class="row">
+    <div class="col-md-6">
+
+      {# Affiche la photo si elle existe, sinon placeholder #}
+      {% if item.photos and item.photos|length > 0 %}
+        <div class="row g-2 mb-3">
+  {% for photo in item.photos %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <img src="{{ url_for('main.uploaded_file', filename=photo.filename) }}" class="img-thumbnail w-100 shadow-sm" style="aspect-ratio: 1/1; object-fit: cover;" alt="Photo">
+    </div>
+  {% endfor %}
+</div>
+      {% elif item.photo_filename %}
+        <img src="{{ url_for('main.uploaded_file', filename=item.photo_filename) }}"
+             class="img-fluid mb-3" alt="Photo">
+      {% else %}
+        <div class="bg-light d-flex align-items-center justify-content-center w-100" style="height: 300px;">
+<style>@media (max-width: 575.98px){.bg-light[style*='height: 300px;']{height:140px!important;}}</style>
+          <span class="text-muted">Pas de photo</span>
+        </div>
+      {% endif %}
+
+      {# Détails de l'objet #}
+      <h3 class="fw-bold mb-3 d-flex align-items-center gap-2">
+  <i class="bi bi-box-seam text-primary"></i> {{ item.title }}
+  <span class="badge {% if item.status == Status.LOST %}bg-danger{% elif item.status == Status.FOUND %}bg-primary{% elif item.status == Status.RETURNED %}bg-success{% elif item.status == Status.PENDING_DELETION %}bg-warning text-dark{% else %}bg-secondary{% endif %} ms-2">
+    {{ item.status.name.capitalize() }}
+  </span>
+  {% if has_match %}
+    <span class="badge bg-success ms-2">Match validé</span>
+  {% endif %}
+</h3>
+      <div class="card p-3 mb-3 bg-light border-0 shadow-sm rounded-4">
+  <p class="mb-2"><i class="bi bi-tag text-secondary"></i> <strong>Catégorie :</strong>
+    {% if item.category %}{{ item.category.name }}{% else %}—{% endif %}
+  </p>
+  <p class="mb-2"><i class="bi bi-geo-alt text-danger"></i> <strong>Lieu :</strong> {{ item.location or '—' }}</p>
+  <p class="mb-2"><i class="bi bi-calendar-event text-info"></i> <strong>Date signalement :</strong> {{ item.date_reported.strftime('%d/%m/%Y %H:%M') }}</p>
+  <p class="mb-0"><i class="bi bi-chat-left-text text-success"></i> <strong>Description :</strong><br> {{ item.comments or '—' }}</p>
+</div>
+
+      <hr>
+      <h5>Informations déclarant</h5>
+      <p><strong>Nom :</strong> {{ item.reporter_name }}</p>
+      <p><strong>Email :</strong> {{ item.reporter_email }}</p>
+      <p><strong>Téléphone :</strong> {{ item.reporter_phone or '—' }}</p>
+
+      {# Si l'objet est déjà rendu #}
+      {% if item.status == Status.PENDING_DELETION %}
+  <div class="alert alert-warning">Cet objet est en attente de suppression. Il n'est plus visible publiquement.</div>
+{% elif item.status == Status.RETURNED %}
+        <hr>
+        <h5>Objet rendu</h5>
+        <p><strong>Date restitution :</strong>
+          {% if item.return_date %}
+            {{ item.return_date.strftime('%d/%m/%Y %H:%M') }}
+          {% else %}
+            —
+          {% endif %}
+        </p>
+        <p><strong>Réclamant :</strong> {{ item.claimant_name or '—' }}</p>
+        <p><strong>Email réclamant :</strong> {{ item.claimant_email or '—' }}</p>
+        <p><strong>Téléphone réclamant :</strong> {{ item.claimant_phone or '—' }}</p>
+        <p><strong>Commentaire restitution :</strong><br> {{ item.return_comment or '—' }}</p>
+
+      {# Sinon, deux formulaires : correspondance puis réclamation #}
+      {% else %}
+        <hr>
+        {% if item.status != Status.PENDING_DELETION %}
+        {# 1) Formulaire de correspondance si match_form est défini #}
+        {% if match_form %}
+          {% if not has_match %}
+            <h5>Valider correspondance avec un objet existant</h5>
+            <form method="post">
+              {{ match_form.hidden_tag() }}
+              <div class="mb-3">
+                {{ match_form.match_with.label(class="form-label") }}
+                {{ match_form.match_with(class="form-select") }}
+              </div>
+              <button type="submit" name="submit_match" class="btn btn-warning">Confirmer correspondance</button>
+            </form>
+            <hr>
+          {% else %}
+            <div class="alert alert-success mb-3">
+              <i class="bi bi-check-circle me-2"></i>
+              Une correspondance a déjà été validée pour cet objet.
+            </div>
+          {% endif %}
+        {% endif %}
+
+        {# 2) Formulaire de réclamation classique #}
+        <h5>Réclamer cet objet</h5>
+        <form method="post">
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            {{ form.claimant_name.label(class="form-label") }}
+            {{ form.claimant_name(class="form-control", placeholder="Votre nom") }}
+          </div>
+          <div class="mb-3">
+            {{ form.claimant_email.label(class="form-label") }}
+            {{ form.claimant_email(class="form-control", placeholder="Votre email") }}
+          </div>
+          <div class="mb-3">
+            {{ form.claimant_phone.label(class="form-label") }}
+            {{ form.claimant_phone(class="form-control", placeholder="Votre téléphone (facultatif)") }}
+          </div>
+          <div class="mb-3">
+            {{ form.photos.label(class="form-label") }}
+            {{ form.photos(class="form-control", accept="image/*", capture="environment", multiple=True) }}
+            <div class="form-text">Formats autorisés : jpg, jpeg, png. Max 30 Mo.</div>
+          </div>
+          <button type="submit" name="submit" class="btn btn-success">{{ form.submit.label.text }}</button>
+        </form>
+        {% endif %}
+      {% endif %}
+      <hr>
+      {% if item.status == Status.PENDING_DELETION %}
+  <div class="alert alert-warning mt-4">Cet objet est en attente de suppression par l'administrateur.</div>
+{% elif current_user.is_authenticated and not current_user.is_admin %}
+  <form method="post" action="{{ url_for('main.delete_item', item_id=item.id) }}" class="mt-4">
+    {{ delete_form.hidden_tag() }}
+    <button type="submit" class="btn btn-warning btn-lg w-100 mt-2"><i class="bi bi-x-circle"></i> Demander la suppression</button>
+    <div class="form-text text-warning">L'administrateur sera notifié. L'objet sera masqué en attendant validation.</div>
+  </form>
+{% elif current_user.is_authenticated and current_user.is_admin %}
+  <form method="post" action="{{ url_for('main.delete_item', item_id=item.id) }}" class="mt-4">
+    {{ delete_form.hidden_tag() }}
+    <div class="mb-2">
+      <label for="delete_password" class="form-label text-danger"><i class="bi bi-exclamation-triangle"></i> Mot de passe suppression :</label>
+      {{ delete_form.delete_password(class="form-control", placeholder="Mot de passe", autocomplete="current-password", id="delete_password") }}
+      {% if delete_form.delete_password.errors %}
+        <div class="text-danger small">{{ delete_form.delete_password.errors[0] }}</div>
+      {% endif %}
+    </div>
+    <button type="submit" class="btn btn-danger btn-lg w-100 mt-2"><i class="bi bi-trash"></i> Supprimer définitivement</button>
+    <div class="form-text text-danger">Action irréversible : suppression totale de l’objet.</div>
+  </form>
+{% endif %}
+    </div>
+  </div>
+{% endblock %}
