@@ -47,9 +47,9 @@
           <div class="alert alert-warning mb-2">Champ photo CI (test/debug) : doit apparaître si 'Carte d'identité' est sélectionné.</div>
           {{ form.id_card_photo.label(class="form-label") }}
           <div class="input-group">
-            {{ form.id_card_photo(class="form-control d-none", id="id-card-photo-input", accept="image/*", capture="environment", onchange="previewIdCardPhoto(event)") }}
-            <button type="button" class="btn btn-primary" onclick="document.getElementById('id-card-photo-input').click();">
-              Prendre une photo / Choisir une image
+            {{ form.id_card_photo(class="form-control d-none", id="id-card-photo-input", accept="image/*", capture="environment", onchange="previewIdCardPhoto(event)", disabled=true) }}
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('id-card-photo-input').click();" disabled>
+              Prendre une photo / Choisir une image (désactivé)
             </button>
           </div>
           <small class="form-text text-muted">Sur mobile, ce bouton ouvre la caméra.</small>

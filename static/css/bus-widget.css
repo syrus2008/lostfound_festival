@@ -74,9 +74,33 @@
 }
 
 .bus-widget-body {
-    padding: 15px;
+    padding: 16px;
     overflow-y: auto;
     max-height: calc(80vh - 60px);
+    flex-grow: 1;
+}
+
+.bus-waiting-info {
+    background-color: #f8f9fa;
+    border-left: 4px solid #ffc107;
+    padding: 10px 12px;
+    margin-bottom: 16px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #495057;
+}
+
+.bus-waiting-info i {
+    color: #ffc107;
+    font-size: 16px;
+}
+
+.bus-waiting-info strong {
+    color: #e67e22;
+    font-weight: 600;
 }
 
 .schedule-day {

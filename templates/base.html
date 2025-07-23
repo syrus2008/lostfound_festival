@@ -78,10 +78,16 @@
 </nav>
 <!-- Décor latéral Lost&Found -->
 <style>
+  /* Conteneur principal - s'assure qu'il est au-dessus des images décoratives */
+  .container {
+    position: relative;
+    z-index: 1;
+  }
+  
   .img-border-left, .img-border-right {
     position: fixed;
     top: 80px;
-    z-index: 0;
+    z-index: 0; /* Reste en arrière-plan */
     opacity: 0.85;
     pointer-events: none;
   }
@@ -120,7 +126,7 @@
   </div>
 </footer>
 
-  <div class="container mt-4">
+  <div class="container mt-4" style="position: relative; z-index: 10;">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
