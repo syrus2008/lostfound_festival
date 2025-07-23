@@ -106,7 +106,7 @@
             {% if not loan.return_date %}
               <button type="button" class="btn btn-outline-success btn-sm" data-bs-toggle="modal" data-bs-target="#signatureModal{{ loan.id }}">Retourner</button>
               <!-- Modal pour signature -->
-              <div class="modal fade" id="signatureModal{{ loan.id }}" tabindex="-1" aria-labelledby="signatureModalLabel{{ loan.id }}" aria-hidden="true" style="z-index: 9999 !important;">
+              <div class="modal fade" id="signatureModal{{ loan.id }}" tabindex="-1" aria-labelledby="signatureModalLabel{{ loan.id }}" aria-hidden="true" data-bs-backdrop="static">
                 <div class="modal-dialog modal-dialog-centered" style="max-width:95vw;">
                   <div class="modal-content">
                     <div class="modal-header">
@@ -172,11 +172,18 @@
 <style>
   /* Styles pour le modal de signature */
   .modal-backdrop {
-    z-index: 9998 !important;
+    z-index: 1040 !important; /* Bootstrap default is 1040 */
+    background-color: rgba(0, 0, 0, 0.5);
   }
   
   .modal {
-    z-index: 9999 !important;
+    z-index: 1050 !important; /* Bootstrap default is 1050 */
+  }
+  
+  /* S'assurer que le modal est au-dessus du backdrop */
+  .modal.show {
+    display: block;
+    background-color: rgba(0, 0, 0, 0.5);
   }
   
   /* Désactiver les événements de défilement sur le canvas de signature */
