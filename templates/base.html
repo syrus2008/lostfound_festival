@@ -10,6 +10,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bus-widget.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <style>
     body { font-family: 'Inter', Arial, sans-serif; }
     .card-hover-effect { transition: box-shadow 0.2s, transform 0.2s; }
@@ -133,9 +135,15 @@
     {% block content %}{% endblock %}
   </div>
 
+  <!-- Scripts JS -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
   <script src="{{ url_for('static', filename='js/carousel_swipe.js') }}"></script>
-</body>
+  <script src="{{ url_for('static', filename='js/bus-widget.js') }}"></script>
+  
+  <!-- Widget des horaires de bus -->
+  {% include '_bus_schedule_widget.html' %}
+  
+  </body>
 </html>
